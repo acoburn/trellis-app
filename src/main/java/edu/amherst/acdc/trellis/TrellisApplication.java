@@ -15,6 +15,8 @@
  */
 package edu.amherst.acdc.trellis;
 
+import edu.amherst.acdc.trellis.resources.LdpResource;
+
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -27,6 +29,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     /**
      * The main entry point
      * @param args the argument list
+     * @throws Exception if something goes horribly awry
      */
     public static void main(final String[] args) throws Exception {
         new TrellisApplication().run(args);
@@ -39,13 +42,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TrellisConfiguration> bootstrap) {
-        // TODO: application initialization
     }
 
     @Override
     public void run(final TrellisConfiguration configuration,
                     final Environment environment) {
-        // TODO: implement application
+        final LdpResource resource = new LdpResource();
+        environment.jersey().register(resource);
     }
 
 }

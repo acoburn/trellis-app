@@ -29,7 +29,7 @@ targetCompatibility = 1.8
 
 group = 'edu.amherst.acdc'
 description = 'Trellis Application'
-
+mainClassName = 'edu.amherst.acdc.trellis.TrellisApplication'
 
 ext {
     vendor = 'Amherst College'
@@ -44,11 +44,10 @@ ext {
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.21'
     dropwizardVersion = '1.1.0'
+    logbackVersion = '1.1.7'
 
     /* Testing */
     junitVersion = '4.12'
-    logbackVersion = '1.1.7'
-    commonsIoVersion = '2.5'
 
     /* OSGi */
     spiflyVersion = '1.0.8'
@@ -64,19 +63,15 @@ dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: httpClientVersion
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testCompile group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
-    testCompile group: 'commons-io', name: 'commons-io', version: commonsIoVersion
 
     buildToolsConfig 'edu.amherst.acdc:acrepo-build-tools:0.2.0'
 }
 
 task appJar(type: OneJar) {
-    mainClass = 'edu.amherst.acdc.trellis.TrellisApplication'
+    mainClass = mainClassName
     archiveName = 'trellis.jar'
 }
 
