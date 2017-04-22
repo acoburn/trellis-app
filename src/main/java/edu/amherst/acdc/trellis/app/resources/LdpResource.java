@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.resources;
+package edu.amherst.acdc.trellis.app.resources;
 
-import static edu.amherst.acdc.trellis.core.RdfMediaType.APPLICATION_LD_JSON;
-import static edu.amherst.acdc.trellis.core.RdfMediaType.APPLICATION_N_TRIPLES;
-import static edu.amherst.acdc.trellis.core.RdfMediaType.TEXT_TURTLE;
-import static edu.amherst.acdc.trellis.core.RdfMediaType.VALID_TYPES;
+import static edu.amherst.acdc.trellis.app.core.RdfMediaType.APPLICATION_LD_JSON;
+import static edu.amherst.acdc.trellis.app.core.RdfMediaType.APPLICATION_N_TRIPLES;
+import static edu.amherst.acdc.trellis.app.core.RdfMediaType.TEXT_TURTLE;
+import static edu.amherst.acdc.trellis.app.core.RdfMediaType.VARIANTS;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
+
+import edu.amherst.acdc.trellis.vocabulary.LDP;
 
 import java.net.URI;
 import java.util.List;
@@ -40,13 +43,19 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.Variant;
 
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.slf4j.Logger;
 
-
+/**
+ * @author acoburn
+ */
 @Path("{path: .+}")
 @Produces({TEXT_TURTLE, APPLICATION_LD_JSON, APPLICATION_N_TRIPLES})
 public class LdpResource {
+
+    private static final Logger LOGGER = getLogger(LdpResource.class);
 
     /**
      * Perform a GET operation on an LDP Resource
@@ -69,14 +78,20 @@ public class LdpResource {
 
         // If it's RDF or the syntax is set, respond w/ RDF
         // Configure prefer headers
-        // Add header values (Vary, LastModified, Created, Link, etc)
+        // Add header values (LastModified, Created, Link, etc)
 
-        return Response.ok().entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString()).build();
+        return Response.ok()
+            .link(LDP.Resource.getIRIString(), "type")
+            // add other LDP type(s)
+            .variants(VARIANTS)
+            .header("Vary", "Prefer")
+            .entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString())
+            .build();
     }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
-        final Optional<RDFSyntax> syntax = VALID_TYPES.stream().filter(type::isCompatible).findFirst()
-                .map(MediaType::toString).flatMap(RDFSyntax::byMediaType);
+        final Optional<RDFSyntax> syntax = VARIANTS.stream().map(Variant::getMediaType).filter(type::isCompatible)
+            .findFirst().map(MediaType::toString).flatMap(RDFSyntax::byMediaType);
         return syntax.isPresent() ? of(syntax.get()) : empty();
     };
 

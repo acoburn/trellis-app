@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis;
+package edu.amherst.acdc.trellis.app;
 
-import edu.amherst.acdc.trellis.resources.LdpResource;
+import edu.amherst.acdc.trellis.app.resources.LdpResource;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;

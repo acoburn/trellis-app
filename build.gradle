@@ -29,7 +29,7 @@ targetCompatibility = 1.8
 
 group = 'edu.amherst.acdc'
 description = 'Trellis Application'
-mainClassName = 'edu.amherst.acdc.trellis.TrellisApplication'
+mainClassName = 'edu.amherst.acdc.trellis.app.TrellisApplication'
 
 ext {
     vendor = 'Amherst College'
@@ -39,12 +39,12 @@ ext {
 
     /* Dependencies */
     trellisSpiVersion = '0.1.0-SNAPSHOT'
+    trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.21'
     dropwizardVersion = '1.1.0'
-    logbackVersion = '1.1.7'
 
     /* Testing */
     junitVersion = '4.12'
@@ -62,8 +62,9 @@ configurations {
 dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
 

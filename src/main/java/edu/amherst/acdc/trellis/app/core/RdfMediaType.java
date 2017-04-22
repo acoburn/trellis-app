@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.core;
-
-import static java.util.Arrays.asList;
+package edu.amherst.acdc.trellis.app.core;
 
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Variant;
 
+/**
+ * @author acoburn
+ */
 public final class RdfMediaType {
 
     public static final String APPLICATION_LD_JSON = "application/ld+json";
@@ -35,7 +37,10 @@ public final class RdfMediaType {
 
     public static final MediaType TEXT_TURTLE_TYPE = new MediaType("text", "turtle", "utf-8");
 
-    public static final List<MediaType> VALID_TYPES = asList(TEXT_TURTLE_TYPE, APPLICATION_LD_JSON_TYPE,
-            APPLICATION_N_TRIPLES_TYPE);
+    public static final List<Variant> VARIANTS = Variant.mediaTypes(TEXT_TURTLE_TYPE, APPLICATION_LD_JSON_TYPE,
+                APPLICATION_N_TRIPLES_TYPE).build();
 
+    private RdfMediaType() {
+        // prevent instantiation
+    }
 }
