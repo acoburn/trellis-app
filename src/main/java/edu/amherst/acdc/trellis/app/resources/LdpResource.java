@@ -21,16 +21,21 @@ import static edu.amherst.acdc.trellis.app.core.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.app.core.RdfMediaType.VARIANTS;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
 
+import edu.amherst.acdc.trellis.api.Resource;
+import edu.amherst.acdc.trellis.spi.ResourceService;
+import edu.amherst.acdc.trellis.spi.SerializationService;
 import edu.amherst.acdc.trellis.vocabulary.LDP;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -45,6 +50,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Variant;
 
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 
@@ -56,6 +63,21 @@ import org.slf4j.Logger;
 public class LdpResource {
 
     private static final Logger LOGGER = getLogger(LdpResource.class);
+
+    private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
+
+    private final ResourceService resourceService;
+    private final SerializationService serializationService;
+
+    /**
+     * Create a LdpResource
+     * @param resourceService the resource service
+     * @param serializationService the serialization service
+     */
+    public LdpResource(final ResourceService resourceService, final SerializationService serializationService) {
+        this.resourceService = resourceService;
+        this.serializationService = serializationService;
+    }
 
     /**
      * Perform a GET operation on an LDP Resource
@@ -72,6 +94,14 @@ public class LdpResource {
             return Response.seeOther(uri).build();
         }
 
+        final IRI identifier = rdf.createIRI("trellis:" + path);
+        // should also support timegates...
+        final Optional<Resource> resource = resourceService.get(identifier);
+
+        if (!resource.isPresent()) {
+            return Response.status(NOT_FOUND).build();
+        }
+
         // Try to load the resource using the SPI
         // This may be a LDP-NR, so check the accept headers...
         final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
@@ -83,6 +113,18 @@ public class LdpResource {
         return Response.ok()
             .link(LDP.Resource.getIRIString(), "type")
             // add other LDP type(s)
+            // add Accept-Post for container resources
+            // add Accept-Patch for LDP-RS
+            // add ETag values
+            // add Memento headers
+            // add inbox, acl, web-annotation headers, if applicable
+            // add Link rel="{canonical, describes, describedby}", for LDP-NR
+            // add Link rel="memento" for each Memento resource
+            // add Content-Length for LDP-NR
+            // add Content-Type for LDP-NR
+            // add Last-Modified
+            // add Created
+            // add CreatedBy ??
             .variants(VARIANTS)
             .header("Vary", "Prefer")
             .entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString())

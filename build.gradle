@@ -40,6 +40,8 @@ ext {
     /* Dependencies */
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     trellisVocabularyVersion = '0.1.0-SNAPSHOT'
+    trellisIoJenaVersion = '0.1.0-SNAPSHOT'
+    trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
     httpClientVersion = '4.5.2'
@@ -63,6 +65,8 @@ dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-io-jena', version: trellisIoJenaVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
 

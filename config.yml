@@ -1,5 +1,8 @@
 logging:
-  level: INFO
+  level: WARN
   loggers:
-    edu.amherst.acdc.trellis: DEBUG
-dataPath: ./data
+    edu.amherst.acdc.trellis.app: INFO
+
+dataPath: file:/Users/acoburn/trellisData
+ensemble: localhost:2181
+bootstrapServers: localhost:9092

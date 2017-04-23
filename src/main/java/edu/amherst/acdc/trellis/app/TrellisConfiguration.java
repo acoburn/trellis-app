@@ -30,6 +30,12 @@ public class TrellisConfiguration extends Configuration {
     @NotEmpty
     private String defaultName = "Trellis";
 
+    @NotEmpty
+    private String ensemble;
+
+    @NotEmpty
+    private String bootstrapServers;
+
     /**
      * Get the data path
      * @return the data path
@@ -64,5 +70,41 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public void setDefaultName(final String name) {
         this.defaultName = name;
+    }
+
+    /**
+     * Set the kafka bootstrap server locations
+     * @param bootstrapServers a comma-delimited list of kafka servers
+     */
+    @JsonProperty
+    public void setBootstrapServers(final String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
+    }
+
+    /**
+     * Get the kafka bootstrap server locations
+     * @return the kafka bootstrap server locations
+     */
+    @JsonProperty
+    public String getBootstrapServers() {
+        return bootstrapServers;
+    }
+
+    /**
+     * Set the zookeeper ensemble locations
+     * @param ensemble a comma-delimited list of zookeeper servers
+     */
+    @JsonProperty
+    public void setEnsemble(final String ensemble) {
+        this.ensemble = ensemble;
+    }
+
+    /**
+     * Get the zookeeper ensemble locations
+     * @return the zookeeper ensemble locations
+     */
+    @JsonProperty
+    public String getEnsemble() {
+        return ensemble;
     }
 }

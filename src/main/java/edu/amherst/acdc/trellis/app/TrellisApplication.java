@@ -15,11 +15,20 @@
  */
 package edu.amherst.acdc.trellis.app;
 
+import static java.util.Collections.singletonMap;
+
 import edu.amherst.acdc.trellis.app.resources.LdpResource;
+import edu.amherst.acdc.trellis.spi.ResourceService;
+import edu.amherst.acdc.trellis.spi.SerializationService;
+import edu.amherst.acdc.trellis.io.JenaSerializationService;
+import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * @author acoburn
@@ -46,8 +55,16 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void run(final TrellisConfiguration configuration,
-                    final Environment environment) {
-        final LdpResource resource = new LdpResource();
+                    final Environment environment) throws IOException {
+        final Properties kafkaProps = new Properties();
+        final Properties zkProps = new Properties();
+        kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
+        zkProps.setProperty("connectString", configuration.getEnsemble());
+
+        final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
+                singletonMap("repository", configuration.getDataPath()));
+        final SerializationService ioSvc = new JenaSerializationService();
+        final LdpResource resource = new LdpResource(resSvc, ioSvc);
         environment.jersey().register(resource);
     }
 
