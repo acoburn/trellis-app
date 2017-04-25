@@ -26,23 +26,26 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
 
 import edu.amherst.acdc.trellis.api.Datastream;
-import edu.amherst.acdc.trellis.api.Resource;
+import edu.amherst.acdc.trellis.spi.DatastreamService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 import edu.amherst.acdc.trellis.vocabulary.LDP;
 import edu.amherst.acdc.trellis.vocabulary.OA;
 import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
-import java.net.URI;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -54,12 +57,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Variant;
 
 import org.apache.commons.rdf.api.IRI;
@@ -80,15 +83,18 @@ public class LdpResource {
 
     private final ResourceService resourceService;
     private final SerializationService serializationService;
+    private final DatastreamService datastreamService;
 
     /**
      * Create a LdpResource
      * @param resourceService the resource service
      * @param serializationService the serialization service
      */
-    public LdpResource(final ResourceService resourceService, final SerializationService serializationService) {
+    public LdpResource(final ResourceService resourceService, final SerializationService serializationService,
+            final DatastreamService datastreamService) {
         this.resourceService = resourceService;
         this.serializationService = serializationService;
+        this.datastreamService = datastreamService;
     }
 
     /**
@@ -102,77 +108,91 @@ public class LdpResource {
     public Response getResource(@PathParam("path") final String path, @Context final HttpHeaders headers) {
         // can this go somewhere more central?
         if (path.endsWith("/")) {
-            final URI uri = UriBuilder.fromUri(stripSlash(path)).build();
-            return Response.seeOther(uri).build();
+            return Response.seeOther(fromUri(stripSlash(path)).build()).build();
         }
 
         final String identifier = "trellis:" + path;
-        // TODO should also support timegates...
-        final Optional<Resource> resource = resourceService.get(rdf.createIRI(identifier));
         final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
 
-        if (!resource.isPresent()) {
-            return Response.status(NOT_FOUND).build();
-        }
+        // TODO should also support timegates...
+        return resourceService.get(rdf.createIRI(identifier)).map(res -> {
+            if (res.getTypes().anyMatch(Trellis.DeletedResource::equals)) {
+                // TODO add Mementos
+                return Response.status(GONE);
+            }
 
-        if (resource.map(Resource::getTypes).orElse(empty()).anyMatch(Trellis.DeletedResource::equals)) {
-            // TODO add mementos
-            return Response.status(GONE).build();
-        }
+            final Response.ResponseBuilder builder = Response.ok();
 
-        final Response.ResponseBuilder builder = Response.ok().variants(VARIANTS).header("Vary", "Prefer");
+            // Standard HTTP Headers
+            builder.lastModified(from(res.getModified()));
+            builder.variants(VARIANTS);
+            builder.header("Vary", "Prefer");
+            syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
-        resource.ifPresent(res -> {
-            final IRI model = res.getInteractionModel();
+            // Add LDP-required headers
+            final IRI model = res.getDatastream().isPresent() && syntax.isPresent() ?
+                    LDP.RDFSource : res.getInteractionModel();
             concat(of(model), ldpResourceTypes(model)).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
                 if (LDP.Container.equals(type)) {
                     builder.header("Accept-Post", VARIANTS.stream().map(Variant::getMediaType)
-                            .map(mt -> mt.getType() + "/" + mt.getSubtype())
-                            .collect(joining(",")));
+                            .map(mt -> mt.getType() + "/" + mt.getSubtype()).collect(joining(",")));
                 } else if (LDP.RDFSource.equals(type)) {
                     builder.header("Accept-Patch", APPLICATION_SPARQL_UPDATE);
                 }
             });
 
+            // Add NonRDFSource-related "describe*" link headers
             res.getDatastream().ifPresent(ds -> {
                 if (syntax.isPresent()) {
+                    // TODO make this identifier opaque
                     builder.link(identifier + "#description", "canonical");
                     builder.link(identifier, "describes");
                 } else {
                     builder.link(identifier, "canonical");
                     builder.link(identifier + "#description", "describedby");
-                    builder.type(ds.getMimeType().orElse("application/octet-stream"));
+                    builder.type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
                 }
             });
-            // TODO add acl header, if in effect
 
-            // add Memento headers
-            // res.getMementos().forEach(range -> {
-            //     builder.header(...);
-            // });
-
+            // Link headers from User data
             res.getTypes().map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
             res.getInbox().map(IRI::getIRIString).ifPresent(inbox -> builder.link(inbox, "inbox"));
             res.getAnnotationService().map(IRI::getIRIString).ifPresent(svc ->
                     builder.link(svc, OA.annotationService.getIRIString()));
 
-            builder.lastModified(from(res.getModified()));
-            syntax.map(s -> s.mediaType).ifPresent(builder::type);
-
+            // NonRDFSources get strong ETags
             if (res.getDatastream().isPresent() && !syntax.isPresent()) {
-                builder.tag(md5Hex(
-                    res.getDatastream().map(Datastream::getModified).map(Instant::toString).get() + identifier));
+                builder.tag(md5Hex(res.getDatastream().map(Datastream::getModified)
+                            .map(Instant::toString).get() + identifier));
+                final IRI dsid = res.getDatastream().map(Datastream::getIdentifier).get();
+                final InputStream datastream = datastreamService.getResolver(dsid).flatMap(svc -> svc.getContent(dsid))
+                    .orElseThrow(() ->
+                        new WebApplicationException("Could not load datastream resolver for " + dsid.getIRIString()));
+                builder.entity(datastream);
             } else {
-                builder.tag(new EntityTag(md5Hex(
-                    res.getModified().toString() + identifier + syntax.map(RDFSyntax::toString).orElse("")), false));
+                // TODO configure prefer headers
+                builder.header("Preference-Applied", "return=representation");
+                builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
+                            .map(RDFSyntax::toString).orElse("")), false));
+                if (syntax.get().equals(RDFA_HTML)) {
+                    builder.entity("<html><head><title>Title</title></head><body>Some HTML!</body></html>");
+                } else {
+                    builder.entity(new RdfStreamer(serializationService, res, syntax.get()));
+                }
             }
 
-            // Configure prefer headers
-            // Add entity
-        });
+            // TODO add acl header, if in effect
+            // add Memento headers
+            // res.getMementos().forEach(range -> {
+            //     builder.header(...);
+            // });
+            // TODO check cache control headers
 
-        return builder.entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString()).build();
+            LOGGER.info("id: {}, format: {}", identifier, syntax.orElse(TURTLE).toString());
+
+            return builder;
+        }).orElse(Response.status(NOT_FOUND)).build();
     }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {

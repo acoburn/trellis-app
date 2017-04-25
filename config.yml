@@ -3,6 +3,7 @@ logging:
   loggers:
     edu.amherst.acdc.trellis.app: INFO
 
-dataPath: file:/Users/acoburn/trellisData
+dataPath: /Users/acoburn/trellisData
+binaryPath: /Users/acoburn/trellisBinary
 ensemble: localhost:2181
 bootstrapServers: localhost:9092

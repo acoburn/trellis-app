@@ -28,6 +28,9 @@ public class TrellisConfiguration extends Configuration {
     private String dataPath;
 
     @NotEmpty
+    private String binaryPath;
+
+    @NotEmpty
     private String defaultName = "Trellis";
 
     @NotEmpty
@@ -52,6 +55,24 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public void setDataPath(final String dataPath) {
         this.dataPath = dataPath;
+    }
+
+    /**
+     * Get the binary path
+     * @return the binary path
+     */
+    @JsonProperty
+    public String getBinaryPath() {
+        return binaryPath;
+    }
+
+    /**
+     * Set the binary path
+     * @param binaryPath the binary path
+     */
+    @JsonProperty
+    public void setBinaryPath(final String binaryPath) {
+        this.binaryPath = binaryPath;
     }
 
     /**

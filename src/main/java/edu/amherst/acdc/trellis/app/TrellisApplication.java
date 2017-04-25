@@ -15,11 +15,15 @@
  */
 package edu.amherst.acdc.trellis.app;
 
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 
+import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
+import edu.amherst.acdc.trellis.datastream.FileResolver;
 import edu.amherst.acdc.trellis.http.LdpResource;
 import edu.amherst.acdc.trellis.io.JenaSerializationService;
 import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
+import edu.amherst.acdc.trellis.spi.DatastreamService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 
@@ -64,7 +68,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
                 singletonMap("repository", configuration.getDataPath()));
         final SerializationService ioSvc = new JenaSerializationService();
-        final LdpResource resource = new LdpResource(resSvc, ioSvc);
+        final DatastreamService dsSvc = new DefaultDatastreamService();
+        dsSvc.setResolvers(singletonList(new FileResolver(configuration.getBinaryPath())));
+
+        final LdpResource resource = new LdpResource(resSvc, ioSvc, dsSvc);
         environment.jersey().register(resource);
     }
 
