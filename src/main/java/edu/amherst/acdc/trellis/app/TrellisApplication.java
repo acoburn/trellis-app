@@ -15,7 +15,7 @@
  */
 package edu.amherst.acdc.trellis.app;
 
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
 import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
@@ -70,15 +70,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
                 singletonMap("repository", configuration.getLdprsDirectory()));
-        // TODO add namespace support here
         final SerializationService ioSvc = new JenaSerializationService();
         final NamespaceService nsSvc = new NamespacesJsonContext(configuration.getNamespaceFile());
         final DatastreamService dsSvc = new DefaultDatastreamService();
 
-        dsSvc.setResolvers(singletonList(new FileResolver(configuration.getLdpnrDirectory())));
+        dsSvc.setResolvers(asList(new FileResolver(configuration.getLdpnrDirectory())));
         ioSvc.bind(nsSvc);
 
-        final LdpResource resource = new LdpResource(resSvc, ioSvc, dsSvc);
-        environment.jersey().register(resource);
+        environment.jersey().register(new LdpResource(resSvc, ioSvc, dsSvc));
     }
 }
