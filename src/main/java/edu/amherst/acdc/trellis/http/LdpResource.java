@@ -28,11 +28,13 @@ import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
 
+import edu.amherst.acdc.trellis.api.Datastream;
 import edu.amherst.acdc.trellis.api.Resource;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
@@ -41,6 +43,7 @@ import edu.amherst.acdc.trellis.vocabulary.OA;
 import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -52,6 +55,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -112,16 +116,14 @@ public class LdpResource {
         }
 
         if (resource.map(Resource::getTypes).orElse(empty()).anyMatch(Trellis.DeletedResource::equals)) {
-            // TODO add mementos?
+            // TODO add mementos
             return Response.status(GONE).build();
         }
 
-
-
         final Response.ResponseBuilder builder = Response.ok().variants(VARIANTS).header("Vary", "Prefer");
+
         resource.ifPresent(res -> {
             final IRI model = res.getInteractionModel();
-
             concat(of(model), ldpResourceTypes(model)).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
                 if (LDP.Container.equals(type)) {
@@ -143,7 +145,7 @@ public class LdpResource {
                     builder.type(ds.getMimeType().orElse("application/octet-stream"));
                 }
             });
-            // add acl header, if in effect
+            // TODO add acl header, if in effect
 
             // add Memento headers
             // res.getMementos().forEach(range -> {
@@ -158,8 +160,16 @@ public class LdpResource {
             builder.lastModified(from(res.getModified()));
             syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
-            // add ETag, based on lastModified
+            if (res.getDatastream().isPresent() && !syntax.isPresent()) {
+                builder.tag(md5Hex(
+                    res.getDatastream().map(Datastream::getModified).map(Instant::toString).get() + identifier));
+            } else {
+                builder.tag(new EntityTag(md5Hex(
+                    res.getModified().toString() + identifier + syntax.map(RDFSyntax::toString).orElse("")), false));
+            }
+
             // Configure prefer headers
+            // Add entity
         });
 
         return builder.entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString()).build();

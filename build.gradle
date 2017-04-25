@@ -62,13 +62,14 @@ configurations {
 }
 
 dependencies {
-    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
-    compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
-    compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion
+    compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-io-jena', version: trellisIoJenaVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-rosid-file', version: trellisRosidFileVersion
-    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
 
