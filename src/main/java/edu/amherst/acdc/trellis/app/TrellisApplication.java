@@ -32,8 +32,10 @@ import edu.amherst.acdc.trellis.spi.SerializationService;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.views.ViewBundle;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -57,6 +59,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TrellisConfiguration> bootstrap) {
+        bootstrap.addBundle(new ViewBundle<>());
     }
 
     @Override
@@ -68,8 +71,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
         zkProps.setProperty("connectString", configuration.getEnsemble());
 
-        final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
-                singletonMap("repository", configuration.getLdprsDirectory()));
+        final Map<String, String> repositories = singletonMap("repository", configuration.getLdprsDirectory());
+
+        final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps, repositories);
         final SerializationService ioSvc = new JenaSerializationService();
         final NamespaceService nsSvc = new NamespacesJsonContext(configuration.getNamespaceFile());
         final DatastreamService dsSvc = new DefaultDatastreamService();

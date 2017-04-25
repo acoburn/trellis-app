@@ -89,6 +89,7 @@ public class LdpResource {
      * Create a LdpResource
      * @param resourceService the resource service
      * @param serializationService the serialization service
+     * @param datastreamService the datastream service
      */
     public LdpResource(final ResourceService resourceService, final SerializationService serializationService,
             final DatastreamService datastreamService) {
