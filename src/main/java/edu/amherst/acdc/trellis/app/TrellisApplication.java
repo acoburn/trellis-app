@@ -60,6 +60,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     @Override
     public void run(final TrellisConfiguration configuration,
                     final Environment environment) throws IOException {
+
         final Properties kafkaProps = new Properties();
         final Properties zkProps = new Properties();
         kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
@@ -67,6 +68,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
                 singletonMap("repository", configuration.getDataPath()));
+        // TODO add namespace support here
         final SerializationService ioSvc = new JenaSerializationService();
         final DatastreamService dsSvc = new DefaultDatastreamService();
         dsSvc.setResolvers(singletonList(new FileResolver(configuration.getBinaryPath())));

@@ -188,6 +188,8 @@ public class LdpResource {
             //     builder.header(...);
             // });
             // TODO check cache control headers
+            // TODO add support for instance digests
+            // TODO add support for range requests
 
             LOGGER.info("id: {}, format: {}", identifier, syntax.orElse(TURTLE).toString());
 
