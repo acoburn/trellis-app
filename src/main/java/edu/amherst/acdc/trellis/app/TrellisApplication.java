@@ -17,11 +17,11 @@ package edu.amherst.acdc.trellis.app;
 
 import static java.util.Collections.singletonMap;
 
-import edu.amherst.acdc.trellis.app.resources.LdpResource;
-import edu.amherst.acdc.trellis.spi.ResourceService;
-import edu.amherst.acdc.trellis.spi.SerializationService;
+import edu.amherst.acdc.trellis.http.LdpResource;
 import edu.amherst.acdc.trellis.io.JenaSerializationService;
 import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
+import edu.amherst.acdc.trellis.spi.ResourceService;
+import edu.amherst.acdc.trellis.spi.SerializationService;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;

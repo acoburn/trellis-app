@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.app.resources;
+package edu.amherst.acdc.trellis.http;
 
-import static edu.amherst.acdc.trellis.app.core.RdfMediaType.APPLICATION_LD_JSON;
-import static edu.amherst.acdc.trellis.app.core.RdfMediaType.APPLICATION_N_TRIPLES;
-import static edu.amherst.acdc.trellis.app.core.RdfMediaType.TEXT_TURTLE;
-import static edu.amherst.acdc.trellis.app.core.RdfMediaType.VARIANTS;
+import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
+import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_N_TRIPLES;
+import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
+import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
+import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
+import static java.util.Date.from;
+import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -31,6 +35,8 @@ import edu.amherst.acdc.trellis.api.Resource;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 import edu.amherst.acdc.trellis.vocabulary.LDP;
+import edu.amherst.acdc.trellis.vocabulary.OA;
+import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.net.URI;
 import java.util.List;
@@ -94,12 +100,17 @@ public class LdpResource {
             return Response.seeOther(uri).build();
         }
 
-        final IRI identifier = rdf.createIRI("trellis:" + path);
+        final String identifier = "trellis:" + path;
         // should also support timegates...
-        final Optional<Resource> resource = resourceService.get(identifier);
+        final Optional<Resource> resource = resourceService.get(rdf.createIRI(identifier));
 
         if (!resource.isPresent()) {
             return Response.status(NOT_FOUND).build();
+        }
+
+        if (resource.map(Resource::getTypes).orElse(empty()).anyMatch(Trellis.DeletedResource::equals)) {
+            // add mementos?
+            return Response.status(GONE).build();
         }
 
         // Try to load the resource using the SPI
@@ -110,25 +121,49 @@ public class LdpResource {
         // Configure prefer headers
         // Add header values (LastModified, Created, Link, etc)
 
-        return Response.ok()
-            .link(LDP.Resource.getIRIString(), "type")
-            // add other LDP type(s)
-            // add Accept-Post for container resources
-            // add Accept-Patch for LDP-RS
-            // add ETag values
+        final Response.ResponseBuilder builder = Response.ok().variants(VARIANTS).header("Vary", "Prefer");
+        resource.ifPresent(res -> {
+            final IRI model = res.getInteractionModel();
+
+            concat(of(model), ldpResourceTypes(model)).forEach(type -> {
+                builder.link(type.getIRIString(), "type");
+                if (LDP.Container.equals(type)) {
+                    builder.header("Accept-Post", "text/turtle,application/n-triples,application/ld+json");
+                } else if (LDP.RDFSource.equals(type)) {
+                    builder.header("Accept-Patch", "application/sparql-update");
+                }
+            });
+
+
+            res.getDatastream().ifPresent(ds -> {
+                if (syntax.isPresent()) {
+                    builder.link(identifier + "#description", "canonical");
+                    builder.link(identifier, "describes");
+                } else {
+                    builder.link(identifier, "canonical");
+                    builder.link(identifier + "#description", "describedby");
+                    builder.type(ds.getMimeType().orElse("application/octet-stream"));
+                }
+            });
+            // add acl header, if in effect
+
             // add Memento headers
-            // add inbox, acl, web-annotation headers, if applicable
-            // add Link rel="{canonical, describes, describedby}", for LDP-NR
-            // add Link rel="memento" for each Memento resource
-            // add Content-Length for LDP-NR
-            // add Content-Type for LDP-NR
-            // add Last-Modified
-            // add Created
-            // add CreatedBy ??
-            .variants(VARIANTS)
-            .header("Vary", "Prefer")
-            .entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString())
-            .build();
+            // res.getMementos().forEach(range -> {
+            //     builder.header(...);
+            // });
+
+            res.getTypes().map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+            res.getInbox().map(IRI::getIRIString).ifPresent(inbox -> builder.link(inbox, "inbox"));
+            res.getAnnotationService().map(IRI::getIRIString).ifPresent(svc ->
+                    builder.link(svc, OA.annotationService.getIRIString()));
+
+            builder.lastModified(from(res.getModified()));
+            syntax.map(s -> s.mediaType).ifPresent(builder::type);
+
+            // add ETag, based on lastModified
+        });
+
+        return builder.entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString()).build();
     }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {

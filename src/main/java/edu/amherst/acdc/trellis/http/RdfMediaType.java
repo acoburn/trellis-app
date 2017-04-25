@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.app.core;
+package edu.amherst.acdc.trellis.http;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import javax.ws.rs.core.Variant;
 /**
  * @author acoburn
  */
-public final class RdfMediaType {
+final class RdfMediaType {
 
     public static final String APPLICATION_LD_JSON = "application/ld+json";
 
