@@ -17,10 +17,12 @@ package edu.amherst.acdc.trellis.http;
 
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_N_TRIPLES;
+import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
 import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
 import static java.util.Date.from;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
@@ -101,25 +103,20 @@ public class LdpResource {
         }
 
         final String identifier = "trellis:" + path;
-        // should also support timegates...
+        // TODO should also support timegates...
         final Optional<Resource> resource = resourceService.get(rdf.createIRI(identifier));
+        final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
 
         if (!resource.isPresent()) {
             return Response.status(NOT_FOUND).build();
         }
 
         if (resource.map(Resource::getTypes).orElse(empty()).anyMatch(Trellis.DeletedResource::equals)) {
-            // add mementos?
+            // TODO add mementos?
             return Response.status(GONE).build();
         }
 
-        // Try to load the resource using the SPI
-        // This may be a LDP-NR, so check the accept headers...
-        final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
 
-        // If it's RDF or the syntax is set, respond w/ RDF
-        // Configure prefer headers
-        // Add header values (LastModified, Created, Link, etc)
 
         final Response.ResponseBuilder builder = Response.ok().variants(VARIANTS).header("Vary", "Prefer");
         resource.ifPresent(res -> {
@@ -128,12 +125,13 @@ public class LdpResource {
             concat(of(model), ldpResourceTypes(model)).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
                 if (LDP.Container.equals(type)) {
-                    builder.header("Accept-Post", "text/turtle,application/n-triples,application/ld+json");
+                    builder.header("Accept-Post", VARIANTS.stream().map(Variant::getMediaType)
+                            .map(mt -> mt.getType() + "/" + mt.getSubtype())
+                            .collect(joining(",")));
                 } else if (LDP.RDFSource.equals(type)) {
-                    builder.header("Accept-Patch", "application/sparql-update");
+                    builder.header("Accept-Patch", APPLICATION_SPARQL_UPDATE);
                 }
             });
-
 
             res.getDatastream().ifPresent(ds -> {
                 if (syntax.isPresent()) {
@@ -161,6 +159,7 @@ public class LdpResource {
             syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
             // add ETag, based on lastModified
+            // Configure prefer headers
         });
 
         return builder.entity("trellis:" + path + " " + "format:" + syntax.orElse(TURTLE).toString()).build();

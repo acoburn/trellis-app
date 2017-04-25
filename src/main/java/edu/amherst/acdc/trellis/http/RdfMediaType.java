@@ -33,6 +33,10 @@ final class RdfMediaType {
 
     public static final MediaType APPLICATION_N_TRIPLES_TYPE = new MediaType("application", "n-triples");
 
+    public static final String APPLICATION_SPARQL_UPDATE = "application/sparql-update";
+
+    public static final MediaType APPLICATION_SPARQL_UPDATE_TYPE = new MediaType("application", "sparql-update");
+
     public static final String TEXT_TURTLE = "text/turtle;charset=utf-8";
 
     public static final MediaType TEXT_TURTLE_TYPE = new MediaType("text", "turtle", "utf-8");
