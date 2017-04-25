@@ -25,10 +25,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class TrellisConfiguration extends Configuration {
 
     @NotEmpty
-    private String dataPath;
+    private String ldprsDirectory;
 
     @NotEmpty
-    private String binaryPath;
+    private String ldpnrDirectory;
+
+    @NotEmpty
+    private String namespaceFile;
 
     @NotEmpty
     private String defaultName = "Trellis";
@@ -40,39 +43,57 @@ public class TrellisConfiguration extends Configuration {
     private String bootstrapServers;
 
     /**
-     * Get the data path
-     * @return the data path
+     * Get the LDP-RS directory
+     * @return the LDP-RS directory
      */
     @JsonProperty
-    public String getDataPath() {
-        return dataPath;
+    public String getLdprsDirectory() {
+        return ldprsDirectory;
     }
 
     /**
-     * Set the data path
-     * @param dataPath the data path
+     * Set the LDP-RS directory
+     * @param directory the LDP-RS directory
      */
     @JsonProperty
-    public void setDataPath(final String dataPath) {
-        this.dataPath = dataPath;
+    public void setLdprsDirectory(final String directory) {
+        this.ldprsDirectory = directory;
     }
 
     /**
-     * Get the binary path
-     * @return the binary path
+     * Get the LDP-NR directory
+     * @return the LDP-NR directory
      */
     @JsonProperty
-    public String getBinaryPath() {
-        return binaryPath;
+    public String getLdpnrDirectory() {
+        return ldpnrDirectory;
     }
 
     /**
-     * Set the binary path
-     * @param binaryPath the binary path
+     * Set the LDP-NR directory
+     * @param directory the LDP-NR directory
      */
     @JsonProperty
-    public void setBinaryPath(final String binaryPath) {
-        this.binaryPath = binaryPath;
+    public void setLdpnrDirectory(final String directory) {
+        this.ldpnrDirectory = directory;
+    }
+
+    /**
+     * Get the namespace file location
+     * @return the namespace file location
+     */
+    @JsonProperty
+    public String getNamespaceFile() {
+        return namespaceFile;
+    }
+
+    /**
+     * Set the namespace file location
+     * @param file the namespace file location
+     */
+    @JsonProperty
+    public void setNamespaceFile(final String file) {
+        this.namespaceFile = file;
     }
 
     /**

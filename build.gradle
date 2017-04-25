@@ -43,6 +43,7 @@ ext {
     trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     trellisIoJenaVersion = '0.1.0-SNAPSHOT'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
+    trellisNamespacesVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
     httpClientVersion = '4.5.2'
@@ -66,6 +67,7 @@ dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-datastream', version: trellisDatastreamVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-io-jena', version: trellisIoJenaVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-namespaces', version: trellisNamespacesVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion

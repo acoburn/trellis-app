@@ -22,8 +22,10 @@ import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
 import edu.amherst.acdc.trellis.datastream.FileResolver;
 import edu.amherst.acdc.trellis.http.LdpResource;
 import edu.amherst.acdc.trellis.io.JenaSerializationService;
+import edu.amherst.acdc.trellis.namespaces.NamespacesJsonContext;
 import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
 import edu.amherst.acdc.trellis.spi.DatastreamService;
+import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 
@@ -67,14 +69,16 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         zkProps.setProperty("connectString", configuration.getEnsemble());
 
         final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps,
-                singletonMap("repository", configuration.getDataPath()));
+                singletonMap("repository", configuration.getLdprsDirectory()));
         // TODO add namespace support here
         final SerializationService ioSvc = new JenaSerializationService();
+        final NamespaceService nsSvc = new NamespacesJsonContext(configuration.getNamespaceFile());
         final DatastreamService dsSvc = new DefaultDatastreamService();
-        dsSvc.setResolvers(singletonList(new FileResolver(configuration.getBinaryPath())));
+
+        dsSvc.setResolvers(singletonList(new FileResolver(configuration.getLdpnrDirectory())));
+        ioSvc.bind(nsSvc);
 
         final LdpResource resource = new LdpResource(resSvc, ioSvc, dsSvc);
         environment.jersey().register(resource);
     }
-
 }
