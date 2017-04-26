@@ -37,7 +37,7 @@ class LabelledTriple {
     }
 
     public String getSubject() {
-        if (triple.getObject() instanceof IRI) {
+        if (triple.getSubject() instanceof IRI) {
             return ((IRI) triple.getSubject()).getIRIString();
         }
         return triple.getSubject().ntriplesString();

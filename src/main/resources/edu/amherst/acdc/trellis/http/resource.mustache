@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>{{title}}</title>
+    </head>
+    <body>
+      <h1>{{title}}</h1>
+      <main>
+      {{#triples}}
+      <p>
+        {{subject}} <a href="{{predicate}}">{{predicateLabel}}</a> <a href="{{object}}">{{objectLabel}}</a>
+      </p>
+      {{/triples}}
+      </main>
+    </body>
+</html>

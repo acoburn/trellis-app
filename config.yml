@@ -2,6 +2,7 @@ logging:
   level: WARN
   loggers:
     edu.amherst.acdc.trellis.app: INFO
+    edu.amherst.acdc.trellis.rosid.file: INFO
 
 ldprsDirectory: /Users/acoburn/trellisData/objects
 ldpnrDirectory: /Users/acoburn/trellisData/datastreams

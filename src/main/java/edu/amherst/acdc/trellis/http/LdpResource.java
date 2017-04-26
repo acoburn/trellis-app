@@ -21,14 +21,17 @@ import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDA
 import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
 import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
+import static java.util.Arrays.asList;
 import static java.util.Date.from;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.UriBuilder.fromUri;
@@ -44,13 +47,17 @@ import edu.amherst.acdc.trellis.spi.DatastreamService;
 import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
+import edu.amherst.acdc.trellis.vocabulary.DC;
 import edu.amherst.acdc.trellis.vocabulary.LDP;
 import edu.amherst.acdc.trellis.vocabulary.OA;
+import edu.amherst.acdc.trellis.vocabulary.RDFS;
+import edu.amherst.acdc.trellis.vocabulary.SKOS;
 import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
@@ -80,7 +87,7 @@ import org.slf4j.Logger;
  * @author acoburn
  */
 @Path("{path: .+}")
-@Produces({TEXT_TURTLE, APPLICATION_LD_JSON, APPLICATION_N_TRIPLES})
+@Produces({TEXT_TURTLE, APPLICATION_LD_JSON, APPLICATION_N_TRIPLES, TEXT_HTML})
 public class LdpResource {
 
     private static final Logger LOGGER = getLogger(LdpResource.class);
@@ -97,6 +104,7 @@ public class LdpResource {
      * @param resourceService the resource service
      * @param serializationService the serialization service
      * @param datastreamService the datastream service
+     * @param namespaceService the namespace service
      */
     public LdpResource(final ResourceService resourceService, final SerializationService serializationService,
             final DatastreamService datastreamService, final NamespaceService namespaceService) {
@@ -122,6 +130,7 @@ public class LdpResource {
 
         final String identifier = "trellis:" + path;
         final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
+        LOGGER.info("RDF Syntax: {}", syntax.map(RDFSyntax::toString).orElse("Nothing"));
 
         // TODO should also support timegates...
         return resourceService.get(rdf.createIRI(identifier)).map(res -> {
@@ -141,7 +150,7 @@ public class LdpResource {
             // Add LDP-required headers
             final IRI model = res.getDatastream().isPresent() && syntax.isPresent() ?
                     LDP.RDFSource : res.getInteractionModel();
-            concat(of(model), ldpResourceTypes(model)).forEach(type -> {
+            ldpResourceTypes(model).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
                 if (LDP.Container.equals(type)) {
                     builder.header("Accept-Post", VARIANTS.stream().map(Variant::getMediaType)
@@ -185,7 +194,17 @@ public class LdpResource {
                 builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
                             .map(RDFSyntax::toString).orElse("")), false));
                 if (syntax.get().equals(RDFA_HTML)) {
-                    builder.entity(new GraphView(res.stream().map(Quad::asTriple).map(labelTriple).collect(toList())));
+                    final List<IRI> titleCandidates = asList(SKOS.prefLabel, RDFS.label, DC.title);
+                    final Map<IRI, List<String>> titles = res.stream(Trellis.PreferUserManaged)
+                        .filter(triple -> titleCandidates.contains(triple.getPredicate()))
+                        .filter(triple -> triple.getObject() instanceof Literal)
+                        .collect(groupingBy(Triple::getPredicate, mapping(triple ->
+                                        ((Literal) triple.getObject()).getLexicalForm(), toList())));
+                    final String title = titleCandidates.stream().filter(titles::containsKey)
+                        .map(titles::get).flatMap(List::stream).findFirst().orElse(identifier);
+
+                    builder.entity(new ResourceView(title, identifier,
+                                res.stream().map(Quad::asTriple).map(labelTriple).collect(toList())));
                 } else {
                     builder.entity(new RdfStreamer(serializationService, res, syntax.get()));
                 }
@@ -232,7 +251,7 @@ public class LdpResource {
                 qname = "";
             }
         }
-        return ofNullable(namespace).map(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
+        return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
             .orElse(iri);
     }
 

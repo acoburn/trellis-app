@@ -22,16 +22,28 @@ import java.util.List;
 /**
  * @author acoburn
  */
-class GraphView extends View {
+class ResourceView extends View {
 
     private final List<LabelledTriple> triples;
+    private final String title;
+    private final String subject;
 
-    public GraphView(final List<LabelledTriple> triples) {
-        super("graph.mustache");
+    public ResourceView(final String title, final String subject, final List<LabelledTriple> triples) {
+        super("resource.mustache");
         this.triples = triples;
+        this.title = title;
+        this.subject = subject;
     }
 
     public List<LabelledTriple> getTriples() {
         return triples;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getSubject() {
+        return subject;
     }
 }
