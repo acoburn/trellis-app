@@ -192,7 +192,7 @@ public class LdpResource {
                 // TODO configure prefer headers
                 builder.header("Preference-Applied", "return=representation");
                 builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
-                            .map(RDFSyntax::toString).orElse("")), false));
+                            .map(RDFSyntax::toString).orElse("")), true));
                 if (syntax.get().equals(RDFA_HTML)) {
                     final List<IRI> titleCandidates = asList(SKOS.prefLabel, RDFS.label, DC.title);
                     final Map<IRI, List<String>> titles = res.stream(Trellis.PreferUserManaged)
