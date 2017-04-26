@@ -60,7 +60,7 @@ class Prefer {
             if (x.length == 2) {
                 data.put(x[0].trim(), x[1].trim());
             } else {
-                params.add(x[0].trim());
+                this.params.add(x[0].trim());
             }
         });
 

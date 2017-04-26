@@ -81,6 +81,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         dsSvc.setResolvers(asList(new FileResolver(configuration.getLdpnrDirectory())));
         ioSvc.bind(nsSvc);
 
-        environment.jersey().register(new LdpResource(resSvc, ioSvc, dsSvc));
+        environment.jersey().register(new LdpResource(resSvc, ioSvc, dsSvc, nsSvc));
     }
 }

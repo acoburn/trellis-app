@@ -22,7 +22,9 @@ import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
 import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
 import static java.util.Date.from;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
@@ -39,6 +41,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import edu.amherst.acdc.trellis.api.Datastream;
 import edu.amherst.acdc.trellis.spi.DatastreamService;
+import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 import edu.amherst.acdc.trellis.vocabulary.LDP;
@@ -66,8 +69,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Literal;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 
 /**
@@ -84,6 +90,7 @@ public class LdpResource {
     private final ResourceService resourceService;
     private final SerializationService serializationService;
     private final DatastreamService datastreamService;
+    private final NamespaceService namespaceService;
 
     /**
      * Create a LdpResource
@@ -92,10 +99,11 @@ public class LdpResource {
      * @param datastreamService the datastream service
      */
     public LdpResource(final ResourceService resourceService, final SerializationService serializationService,
-            final DatastreamService datastreamService) {
+            final DatastreamService datastreamService, final NamespaceService namespaceService) {
         this.resourceService = resourceService;
         this.serializationService = serializationService;
         this.datastreamService = datastreamService;
+        this.namespaceService = namespaceService;
     }
 
     /**
@@ -177,7 +185,7 @@ public class LdpResource {
                 builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
                             .map(RDFSyntax::toString).orElse("")), false));
                 if (syntax.get().equals(RDFA_HTML)) {
-                    builder.entity("<html><head><title>Title</title></head><body>Some HTML!</body></html>");
+                    builder.entity(new GraphView(res.stream().map(Quad::asTriple).map(labelTriple).collect(toList())));
                 } else {
                     builder.entity(new RdfStreamer(serializationService, res, syntax.get()));
                 }
@@ -196,6 +204,36 @@ public class LdpResource {
 
             return builder;
         }).orElse(Response.status(NOT_FOUND)).build();
+    }
+
+    private Function<Triple, LabelledTriple> labelTriple = triple -> {
+        final String pred = triple.getPredicate().getIRIString();
+        if (triple.getObject() instanceof IRI) {
+            return new LabelledTriple(triple, getLabel(pred), getLabel(((IRI) triple.getObject()).getIRIString()));
+        } else if (triple.getObject() instanceof Literal) {
+            return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
+        }
+        return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
+    };
+
+    private String getLabel(final String iri) {
+        final int lastHash = iri.lastIndexOf('#');
+        String namespace = null;
+        final String qname;
+        if (lastHash != -1) {
+            namespace = iri.substring(0, lastHash + 1);
+            qname = iri.substring(lastHash + 1);
+        } else {
+            final int lastSlash = iri.lastIndexOf('/');
+            if (lastSlash != -1) {
+                namespace = iri.substring(0, lastSlash + 1);
+                qname = iri.substring(lastSlash + 1);
+            } else {
+                qname = "";
+            }
+        }
+        return ofNullable(namespace).map(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
+            .orElse(iri);
     }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
