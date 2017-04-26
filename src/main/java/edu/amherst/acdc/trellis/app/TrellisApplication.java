@@ -16,7 +16,6 @@
 package edu.amherst.acdc.trellis.app;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonMap;
 
 import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
 import edu.amherst.acdc.trellis.datastream.FileResolver;
@@ -35,6 +34,7 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -71,14 +71,15 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
         zkProps.setProperty("connectString", configuration.getEnsemble());
 
-        final Map<String, String> repositories = singletonMap("repository", configuration.getLdprsDirectory());
+        final Map<String, String> repositories = new HashMap<>();
+        configuration.getPartitions().forEach(partition -> repositories.put(partition.getName(), partition.getLdprs()));
 
         final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps, repositories);
         final SerializationService ioSvc = new JenaSerializationService();
         final NamespaceService nsSvc = new NamespacesJsonContext(configuration.getNamespaceFile());
         final DatastreamService dsSvc = new DefaultDatastreamService();
 
-        dsSvc.setResolvers(asList(new FileResolver(configuration.getLdpnrDirectory())));
+        dsSvc.setResolvers(asList(new FileResolver(configuration.getPartitions().get(0).getLdpnr())));
         ioSvc.bind(nsSvc);
 
         environment.jersey().register(new LdpResource(resSvc, ioSvc, dsSvc, nsSvc));

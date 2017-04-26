@@ -15,20 +15,18 @@
  */
 package edu.amherst.acdc.trellis.app;
 
-import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+
+import io.dropwizard.Configuration;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author acoburn
  */
 public class TrellisConfiguration extends Configuration {
-
-    @NotEmpty
-    private String ldprsDirectory;
-
-    @NotEmpty
-    private String ldpnrDirectory;
 
     @NotEmpty
     private String namespaceFile;
@@ -42,40 +40,25 @@ public class TrellisConfiguration extends Configuration {
     @NotEmpty
     private String bootstrapServers;
 
+    @NotEmpty
+    private List<PartitionConfiguration> partitions;
+
     /**
-     * Get the LDP-RS directory
-     * @return the LDP-RS directory
+     * Get the partitions for this repository
+     * @return the partitions
      */
     @JsonProperty
-    public String getLdprsDirectory() {
-        return ldprsDirectory;
+    public List<PartitionConfiguration> getPartitions() {
+        return partitions;
     }
 
     /**
-     * Set the LDP-RS directory
-     * @param directory the LDP-RS directory
+     * Set the partitions for this repository
+     * @param partitions the partitions
      */
     @JsonProperty
-    public void setLdprsDirectory(final String directory) {
-        this.ldprsDirectory = directory;
-    }
-
-    /**
-     * Get the LDP-NR directory
-     * @return the LDP-NR directory
-     */
-    @JsonProperty
-    public String getLdpnrDirectory() {
-        return ldpnrDirectory;
-    }
-
-    /**
-     * Set the LDP-NR directory
-     * @param directory the LDP-NR directory
-     */
-    @JsonProperty
-    public void setLdpnrDirectory(final String directory) {
-        this.ldpnrDirectory = directory;
+    public void setPartitions(final List<PartitionConfiguration> partitions) {
+        this.partitions = partitions;
     }
 
     /**

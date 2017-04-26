@@ -4,9 +4,12 @@ logging:
     edu.amherst.acdc.trellis.app: INFO
     edu.amherst.acdc.trellis.rosid.file: INFO
 
-ldprsDirectory: /Users/acoburn/trellisData/objects
-ldpnrDirectory: /Users/acoburn/trellisData/datastreams
-namespaceFile: /Users/acoburn/trellisData/namespaces.json
+partitions:
+    - name: repository
+      ldpnr: /Users/acoburn/trellisData/objects
+      ldprs: /Users/acoburn/trellisData/datastreams
+      url: http://localhost:8080/repository
 
+namespaceFile: /Users/acoburn/trellisData/namespaces.json
 ensemble: localhost:2181
 bootstrapServers: localhost:9092
