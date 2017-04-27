@@ -15,6 +15,8 @@
  */
 package edu.amherst.acdc.trellis.http;
 
+import static edu.amherst.acdc.trellis.http.Prefer.PREFER;
+import static edu.amherst.acdc.trellis.http.Prefer.PREFERENCE_APPLIED;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_N_TRIPLES;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -133,7 +135,7 @@ public class LdpResource {
             // Standard HTTP Headers
             builder.lastModified(from(res.getModified()));
             builder.variants(VARIANTS);
-            builder.header("Vary", "Prefer");
+            builder.header("Vary", PREFER);
             syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
             // Add LDP-required headers
@@ -179,7 +181,8 @@ public class LdpResource {
                 builder.entity(datastream);
             } else {
                 // TODO configure prefer headers
-                builder.header("Preference-Applied", "return=representation");
+                final Prefer prefer = new Prefer(headers.getRequestHeader(PREFER).stream().findFirst().orElse(""));
+                builder.header(PREFERENCE_APPLIED, "return=" + prefer.getPreference().orElse("representation"));
                 builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
                             .map(RDFSyntax::toString).orElse("")), true));
 

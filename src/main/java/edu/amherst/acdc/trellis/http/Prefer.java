@@ -15,10 +15,11 @@
  */
 package edu.amherst.acdc.trellis.http;
 
-import static java.util.Arrays.stream;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 import java.util.HashMap;
@@ -36,6 +37,10 @@ import java.util.function.Function;
  * <a href="https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#preferences">IANA values</a>
  */
 class Prefer {
+
+    public final static String PREFER = "Prefer";
+
+    public final static String PREFERENCE_APPLIED = "Preference-Applied";
 
     private final Optional<String> preference;
 
@@ -56,13 +61,15 @@ class Prefer {
     public Prefer(final String prefer) {
         final Map<String, String> data = new HashMap<>();
 
-        stream(prefer.split(";")).map(String::trim).map(pref -> pref.split("=", 2)).forEach(x -> {
-            if (x.length == 2) {
-                data.put(x[0].trim(), x[1].trim());
-            } else {
-                this.params.add(x[0].trim());
-            }
-        });
+        if (nonNull(prefer)) {
+            stream(prefer.split(";")).map(String::trim).map(pref -> pref.split("=", 2)).forEach(x -> {
+                if (x.length == 2) {
+                    data.put(x[0].trim(), x[1].trim());
+                } else {
+                    this.params.add(x[0].trim());
+                }
+            });
+        }
 
         this.preference = ofNullable(data.get("return")).filter(x -> x.equals("minimal") || x.equals("representation"));
         this.handling = ofNullable(data.get("handling")).filter(x -> x.equals("lenient") || x.equals("strict"));
@@ -79,24 +86,41 @@ class Prefer {
         return preference;
     }
 
+    /**
+     * Get the handling type
+     * @return the preferred handling type
+     */
     public Optional<String> getHandling() {
         return handling;
     }
 
+    /**
+     * Get the value of the wait parameter, if set
+     * @return the value of the wait parameter, if available
+     */
     public Optional<Integer> getWait() {
         return wait;
     }
 
+    /**
+     * Identify whether the respond-async parameter was set
+     * @return true if the respond-async parameter was set; false otherwise
+     */
     public Boolean getRespondAsync() {
         return params.contains("respond-async");
     }
 
+    /**
+     * Identify whether the depth-noroot parameter was set
+     * @return true if the depth-noroot parameter was set; false otherwise
+     */
     public Boolean getDepthNoroot() {
         return params.contains("depth-noroot");
     }
 
     /**
      * Get the preferred include IRIs
+     * @return the list of IRIs to be included in the representation
      */
     public List<String> getInclude() {
         return unmodifiableList(include);
@@ -104,6 +128,7 @@ class Prefer {
 
     /**
      * Get the preferred omit IRIs
+     * @return the list of IRIs to be omitted from the representation
      */
     public List<String> getOmit() {
         return unmodifiableList(omit);
