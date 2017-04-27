@@ -15,12 +15,12 @@
  */
 package edu.amherst.acdc.trellis.http;
 
-import edu.amherst.acdc.trellis.api.Resource;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 import edu.amherst.acdc.trellis.vocabulary.JSONLD;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
@@ -32,28 +32,28 @@ import org.apache.commons.rdf.api.RDFSyntax;
 /**
  * @author acoburn
  */
-class RdfStreamer implements StreamingOutput {
+class ResourceStreamer implements StreamingOutput {
 
     private final SerializationService service;
-    private final Resource resource;
+    private final Stream<Quad> stream;
     private final RDFSyntax syntax;
     private final String profile;
 
-    public RdfStreamer(final SerializationService service, final Resource resource, final RDFSyntax syntax,
+    public ResourceStreamer(final SerializationService service, final Stream<Quad> stream, final RDFSyntax syntax,
             final String profile) {
         this.service = service;
-        this.resource = resource;
+        this.stream = stream;
         this.syntax = syntax;
         this.profile = profile;
     }
 
-    public RdfStreamer(final SerializationService service, final Resource resource, final RDFSyntax syntax) {
-        this(service, resource, syntax, "");
+    public ResourceStreamer(final SerializationService service, final Stream<Quad> stream, final RDFSyntax syntax) {
+        this(service, stream, syntax, "");
     }
 
     @Override
     public void write(final OutputStream os) throws IOException, WebApplicationException {
-        service.write(resource.stream().map(Quad::asTriple), os, syntax, profileToIRI(profile));
+        service.write(stream.map(Quad::asTriple), os, syntax, profileToIRI(profile));
     }
 
     private static IRI profileToIRI(final String profile) {
