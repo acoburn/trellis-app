@@ -6,8 +6,8 @@ logging:
 
 partitions:
     - name: repository
-      ldpnr: /Users/acoburn/trellisData/objects
-      ldprs: /Users/acoburn/trellisData/datastreams
+      ldpnr: /Users/acoburn/trellisData/datastreams
+      ldprs: /Users/acoburn/trellisData/objects
       url: http://localhost:8080/repository
 
 namespaceFile: /Users/acoburn/trellisData/namespaces.json

@@ -60,6 +60,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.ws.rs.GET;
@@ -75,6 +76,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
@@ -198,12 +200,14 @@ public class LdpResource {
                     // TODO add IRI translation
                     // TODO filter prefer-related triples
                     builder.entity(
-                            new ResourceView(res.getIdentifier(), res.stream().collect(toList()), namespaceService));
+                            new ResourceView(res.getIdentifier(), res.stream().filter(filterWithPrefer(prefer))
+                                .collect(toList()), namespaceService));
                 } else {
                     // TODO add support for json-ld profile data (4th param)
                     // TODO add IRI translation
                     // TODO filter prefer-related triples
-                    builder.entity(new ResourceStreamer(serializationService, res.stream(), syntax.get()));
+                    builder.entity(new ResourceStreamer(serializationService,
+                                res.stream().filter(filterWithPrefer(prefer)), syntax.get()));
                 }
             }
 
@@ -228,6 +232,14 @@ public class LdpResource {
         include.add(LDP.PreferMembership.getIRIString());
         include.add(Trellis.PreferUserManaged.getIRIString());
         return include;
+    }
+
+    private static Predicate<Quad> filterWithPrefer(final Prefer prefer) {
+        final Set<String> include = getDefaultRepresentation();
+        prefer.getOmit().forEach(include::remove);
+        prefer.getInclude().forEach(include::add);
+        return quad -> quad.getGraphName().filter(x -> x instanceof IRI).map(x -> (IRI) x)
+            .map(IRI::getIRIString).filter(include::contains).isPresent();
     }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
