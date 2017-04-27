@@ -24,6 +24,8 @@ import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
 import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
 import static java.util.Date.from;
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -32,6 +34,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -51,9 +54,11 @@ import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -181,12 +186,15 @@ public class LdpResource {
                 builder.entity(datastream);
             } else {
                 // TODO configure prefer headers
-                final Prefer prefer = new Prefer(headers.getRequestHeader(PREFER).stream().findFirst().orElse(""));
+                final Prefer prefer = new Prefer(ofNullable(headers.getRequestHeader(PREFER))
+                        .orElse(emptyList()).stream().findFirst().orElse(""));
                 builder.header(PREFERENCE_APPLIED, "return=" + prefer.getPreference().orElse("representation"));
                 builder.tag(new EntityTag(md5Hex(res.getModified().toString() + identifier + syntax
                             .map(RDFSyntax::toString).orElse("")), true));
 
-                if (syntax.get().equals(RDFA_HTML)) {
+                if (prefer.getPreference().filter("minimal"::equals).isPresent()) {
+                    builder.status(NO_CONTENT);
+                } else if (syntax.get().equals(RDFA_HTML)) {
                     // TODO add IRI translation
                     // TODO filter prefer-related triples
                     builder.entity(
@@ -214,6 +222,13 @@ public class LdpResource {
         }).orElse(Response.status(NOT_FOUND)).build();
     }
 
+    private static Set<String> getDefaultRepresentation() {
+        final Set<String> include = new HashSet<>();
+        include.add(LDP.PreferContainment.getIRIString());
+        include.add(LDP.PreferMembership.getIRIString());
+        include.add(Trellis.PreferUserManaged.getIRIString());
+        return include;
+    }
 
     private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
         final Optional<RDFSyntax> syntax = VARIANTS.stream().map(Variant::getMediaType).filter(type::isCompatible)
