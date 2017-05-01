@@ -75,6 +75,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
+import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
@@ -201,13 +202,14 @@ public class LdpResource {
                     // TODO filter prefer-related triples
                     builder.entity(
                             new ResourceView(res.getIdentifier(), res.stream().filter(filterWithPrefer(prefer))
-                                .collect(toList()), namespaceService));
+                                .map(unskolemize(resourceService)).collect(toList()), namespaceService));
                 } else {
                     // TODO add support for json-ld profile data (4th param)
                     // TODO add IRI translation
                     // TODO filter prefer-related triples
                     builder.entity(new ResourceStreamer(serializationService,
-                                res.stream().filter(filterWithPrefer(prefer)), syntax.get()));
+                                res.stream().filter(filterWithPrefer(prefer)).map(unskolemize(resourceService)),
+                                syntax.get()));
                 }
             }
 
@@ -226,6 +228,12 @@ public class LdpResource {
         }).orElse(Response.status(NOT_FOUND)).build();
     }
 
+    private static Function<Quad, Quad> unskolemize(final ResourceService svc) {
+        return quad -> rdf.createQuad(quad.getGraphName().orElse(Trellis.PreferUserManaged),
+                    (BlankNodeOrIRI) svc.unskolemize(quad.getSubject()),
+                    quad.getPredicate(), svc.unskolemize(quad.getObject()));
+    }
+
     private static Set<String> getDefaultRepresentation() {
         final Set<String> include = new HashSet<>();
         include.add(LDP.PreferContainment.getIRIString());
@@ -242,7 +250,7 @@ public class LdpResource {
             .map(IRI::getIRIString).filter(include::contains).isPresent();
     }
 
-    private static Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
+    private static final Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
         final Optional<RDFSyntax> syntax = VARIANTS.stream().map(Variant::getMediaType).filter(type::isCompatible)
             .findFirst().map(MediaType::toString).flatMap(RDFSyntax::byMediaType);
         return syntax.isPresent() ? of(syntax.get()) : empty();
