@@ -43,6 +43,8 @@ public class TrellisConfiguration extends Configuration {
     @NotEmpty
     private List<PartitionConfiguration> partitions;
 
+    private String baseUrl;
+
     /**
      * Get the partitions for this repository
      * @return the partitions
@@ -131,5 +133,23 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getEnsemble() {
         return ensemble;
+    }
+
+    /**
+     * Get the base URL location
+     * @return the baes URL
+     */
+    @JsonProperty
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    /**
+     * Set the base URL location
+     * @param baseUrl the base URL
+     */
+    @JsonProperty
+    public void setBaseUrl(final String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }

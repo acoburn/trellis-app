@@ -2,6 +2,7 @@ logging:
   level: WARN
   loggers:
     edu.amherst.acdc.trellis.app: INFO
+    edu.amherst.acdc.trellis.http: INFO
     edu.amherst.acdc.trellis.rosid.file: INFO
 
 partitions:

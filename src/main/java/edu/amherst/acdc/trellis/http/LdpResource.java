@@ -73,12 +73,14 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 
@@ -91,22 +93,35 @@ public class LdpResource {
 
     private static final Logger LOGGER = getLogger(LdpResource.class);
 
+    private static final String TRELLIS_PREFIX = "trellis:";
+
     private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
+    private final String baseUrl;
     private final ResourceService resourceService;
     private final SerializationService serializationService;
     private final DatastreamService datastreamService;
     private final NamespaceService namespaceService;
 
+    @Context
+    private UriInfo uriInfo;
+
+    @Context
+    private HttpHeaders headers;
+
     /**
      * Create a LdpResource
+     * @param baseUrl the baseUrl
      * @param resourceService the resource service
      * @param serializationService the serialization service
      * @param datastreamService the datastream service
      * @param namespaceService the namespace service
      */
-    public LdpResource(final ResourceService resourceService, final SerializationService serializationService,
-            final DatastreamService datastreamService, final NamespaceService namespaceService) {
+    public LdpResource(final String baseUrl, final ResourceService resourceService,
+            final SerializationService serializationService,
+            final DatastreamService datastreamService,
+            final NamespaceService namespaceService) {
+        this.baseUrl = baseUrl;
         this.resourceService = resourceService;
         this.serializationService = serializationService;
         this.datastreamService = datastreamService;
@@ -116,18 +131,18 @@ public class LdpResource {
     /**
      * Perform a GET operation on an LDP Resource
      * @param path the path
-     * @param headers the headers
      * @return the response
      */
     @GET
     @Timed
-    public Response getResource(@PathParam("path") final String path, @Context final HttpHeaders headers) {
+    public Response getResource(@PathParam("path") final String path) {
         // can this go somewhere more central?
         if (path.endsWith("/")) {
             return Response.seeOther(fromUri(stripSlash(path)).build()).build();
         }
 
         final String identifier = "trellis:" + path;
+        final String urlPrefix = ofNullable(baseUrl).orElseGet(() -> uriInfo.getBaseUri().toString());
         final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
         LOGGER.info("RDF Syntax: {}", syntax.map(RDFSyntax::toString).orElse("Nothing"));
 
@@ -188,7 +203,6 @@ public class LdpResource {
                         new WebApplicationException("Could not load datastream resolver for " + dsid.getIRIString()));
                 builder.entity(datastream);
             } else {
-                // TODO configure prefer headers
                 final Prefer prefer = new Prefer(ofNullable(headers.getRequestHeader(PREFER))
                         .orElse(emptyList()).stream().findFirst().orElse(""));
                 builder.header(PREFERENCE_APPLIED, "return=" + prefer.getPreference().orElse("representation"));
@@ -198,17 +212,14 @@ public class LdpResource {
                 if (prefer.getPreference().filter("minimal"::equals).isPresent()) {
                     builder.status(NO_CONTENT);
                 } else if (syntax.get().equals(RDFA_HTML)) {
-                    // TODO add IRI translation
-                    // TODO filter prefer-related triples
                     builder.entity(
                             new ResourceView(res.getIdentifier(), res.stream().filter(filterWithPrefer(prefer))
-                                .map(unskolemize(resourceService)).collect(toList()), namespaceService));
+                                .map(unskolemize(resourceService, urlPrefix)).collect(toList()), namespaceService));
                 } else {
                     // TODO add support for json-ld profile data (4th param)
-                    // TODO add IRI translation
-                    // TODO filter prefer-related triples
                     builder.entity(new ResourceStreamer(serializationService,
-                                res.stream().filter(filterWithPrefer(prefer)).map(unskolemize(resourceService)),
+                                res.stream().filter(filterWithPrefer(prefer))
+                                .map(unskolemize(resourceService, urlPrefix)),
                                 syntax.get()));
                 }
             }
@@ -228,10 +239,20 @@ public class LdpResource {
         }).orElse(Response.status(NOT_FOUND)).build();
     }
 
-    private static Function<Quad, Quad> unskolemize(final ResourceService svc) {
+    private static RDFTerm toExternalIri(final RDFTerm term, final String baseUrl) {
+        if (term instanceof IRI) {
+            final String iri = ((IRI) term).getIRIString();
+            if (iri.startsWith(TRELLIS_PREFIX)) {
+                return rdf.createIRI(baseUrl + iri.substring(TRELLIS_PREFIX.length()));
+            }
+        }
+        return term;
+    }
+
+    private static Function<Quad, Quad> unskolemize(final ResourceService svc, final String baseUrl) {
         return quad -> rdf.createQuad(quad.getGraphName().orElse(Trellis.PreferUserManaged),
-                    (BlankNodeOrIRI) svc.unskolemize(quad.getSubject()),
-                    quad.getPredicate(), svc.unskolemize(quad.getObject()));
+                    (BlankNodeOrIRI) toExternalIri(svc.unskolemize(quad.getSubject()), baseUrl),
+                    quad.getPredicate(), toExternalIri(svc.unskolemize(quad.getObject()), baseUrl));
     }
 
     private static Set<String> getDefaultRepresentation() {
