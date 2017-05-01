@@ -15,6 +15,12 @@
  */
 package edu.amherst.acdc.trellis.http;
 
+import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_DATETIME;
+import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_PATCH;
+import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_POST;
+import static edu.amherst.acdc.trellis.http.Constants.MEMENTO_DATETIME;
+import static edu.amherst.acdc.trellis.http.Constants.TRELLIS_PREFIX;
+import static edu.amherst.acdc.trellis.http.Constants.VARY;
 import static edu.amherst.acdc.trellis.http.Prefer.PREFER;
 import static edu.amherst.acdc.trellis.http.Prefer.PREFERENCE_APPLIED;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
@@ -23,6 +29,9 @@ import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDA
 import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
 import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
+import static java.time.ZonedDateTime.parse;
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Date.from;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -37,13 +46,13 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
-import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
 
 import edu.amherst.acdc.trellis.api.Datastream;
+import edu.amherst.acdc.trellis.api.Resource;
 import edu.amherst.acdc.trellis.spi.DatastreamService;
 import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.ResourceService;
@@ -54,6 +63,7 @@ import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -92,8 +102,6 @@ import org.slf4j.Logger;
 public class LdpResource {
 
     private static final Logger LOGGER = getLogger(LdpResource.class);
-
-    private static final String TRELLIS_PREFIX = "trellis:";
 
     private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
@@ -141,13 +149,23 @@ public class LdpResource {
             return Response.seeOther(fromUri(stripSlash(path)).build()).build();
         }
 
-        final String identifier = "trellis:" + path;
         final String urlPrefix = ofNullable(baseUrl).orElseGet(() -> uriInfo.getBaseUri().toString());
+        final String identifier = urlPrefix + path;
         final Optional<RDFSyntax> syntax = getRdfSyntax(headers.getAcceptableMediaTypes());
+        final Optional<Instant> datetime = ofNullable(headers.getRequestHeader(ACCEPT_DATETIME))
+                .orElse(emptyList()).stream().map(String::trim).filter(x -> x.length() > 1)
+                .map(x -> parse(x, RFC_1123_DATE_TIME)).map(ZonedDateTime::toInstant).findFirst();
+
         LOGGER.info("RDF Syntax: {}", syntax.map(RDFSyntax::toString).orElse("Nothing"));
 
-        // TODO should also support timegates...
-        return resourceService.get(rdf.createIRI(identifier)).map(res -> {
+        final Optional<Resource> resource;
+        if (datetime.isPresent()) {
+            resource = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path), datetime.get());
+        } else {
+            resource = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path));
+        }
+
+        return resource.map(res -> {
             if (res.getTypes().anyMatch(Trellis.DeletedResource::equals)) {
                 // TODO add Mementos
                 return Response.status(GONE);
@@ -158,7 +176,7 @@ public class LdpResource {
             // Standard HTTP Headers
             builder.lastModified(from(res.getModified()));
             builder.variants(VARIANTS);
-            builder.header("Vary", PREFER);
+            builder.header(VARY, asList(PREFER, ACCEPT_DATETIME).stream().collect(joining(",")));
             syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
             // Add LDP-required headers
@@ -167,10 +185,10 @@ public class LdpResource {
             ldpResourceTypes(model).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
                 if (LDP.Container.equals(type)) {
-                    builder.header("Accept-Post", VARIANTS.stream().map(Variant::getMediaType)
+                    builder.header(ACCEPT_POST, VARIANTS.stream().map(Variant::getMediaType)
                             .map(mt -> mt.getType() + "/" + mt.getSubtype()).collect(joining(",")));
                 } else if (LDP.RDFSource.equals(type)) {
-                    builder.header("Accept-Patch", APPLICATION_SPARQL_UPDATE);
+                    builder.header(ACCEPT_PATCH, APPLICATION_SPARQL_UPDATE);
                 }
             });
 
@@ -192,6 +210,14 @@ public class LdpResource {
             res.getInbox().map(IRI::getIRIString).ifPresent(inbox -> builder.link(inbox, "inbox"));
             res.getAnnotationService().map(IRI::getIRIString).ifPresent(svc ->
                     builder.link(svc, OA.annotationService.getIRIString()));
+
+            // TODO add link for timemap
+            if (res.isMemento()) {
+                builder.header(MEMENTO_DATETIME, from(res.getModified()));
+                builder.link(identifier, "memento");
+            } else {
+                builder.link(identifier, "original timegate");
+            }
 
             // NonRDFSources get strong ETags
             if (res.getDatastream().isPresent() && !syntax.isPresent()) {
@@ -232,8 +258,6 @@ public class LdpResource {
             // TODO check cache control headers
             // TODO add support for instance digests
             // TODO add support for range requests
-
-            LOGGER.info("id: {}, format: {}", identifier, syntax.orElse(TURTLE).toString());
 
             return builder;
         }).orElse(Response.status(NOT_FOUND)).build();

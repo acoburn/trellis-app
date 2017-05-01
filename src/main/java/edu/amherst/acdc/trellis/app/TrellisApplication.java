@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 
 import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
 import edu.amherst.acdc.trellis.datastream.FileResolver;
+import edu.amherst.acdc.trellis.http.DateTimeExceptionMapper;
 import edu.amherst.acdc.trellis.http.LdpResource;
 import edu.amherst.acdc.trellis.io.JenaSerializationService;
 import edu.amherst.acdc.trellis.namespaces.NamespacesJsonContext;
@@ -84,5 +85,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         environment.jersey().register(
                 new LdpResource(configuration.getBaseUrl(), resSvc, ioSvc, dsSvc, nsSvc));
+        environment.jersey().register(new DateTimeExceptionMapper());
     }
 }
