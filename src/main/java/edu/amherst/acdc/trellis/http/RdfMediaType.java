@@ -27,17 +27,19 @@ import javax.ws.rs.core.Variant;
  */
 final class RdfMediaType {
 
-    public static final String APPLICATION_LD_JSON = "application/ld+json";
+    private static final String APPLICATION = "application";
 
-    public static final MediaType APPLICATION_LD_JSON_TYPE = new MediaType("application", "ld+json");
+    public static final String APPLICATION_LD_JSON = APPLICATION + "/ld+json";
 
-    public static final String APPLICATION_N_TRIPLES = "application/n-triples";
+    public static final MediaType APPLICATION_LD_JSON_TYPE = new MediaType(APPLICATION, "ld+json");
 
-    public static final MediaType APPLICATION_N_TRIPLES_TYPE = new MediaType("application", "n-triples");
+    public static final String APPLICATION_N_TRIPLES = APPLICATION + "/n-triples";
 
-    public static final String APPLICATION_SPARQL_UPDATE = "application/sparql-update";
+    public static final MediaType APPLICATION_N_TRIPLES_TYPE = new MediaType(APPLICATION, "n-triples");
 
-    public static final MediaType APPLICATION_SPARQL_UPDATE_TYPE = new MediaType("application", "sparql-update");
+    public static final String APPLICATION_SPARQL_UPDATE = APPLICATION + "/sparql-update";
+
+    public static final MediaType APPLICATION_SPARQL_UPDATE_TYPE = new MediaType(APPLICATION, "sparql-update");
 
     public static final String TEXT_TURTLE = "text/turtle;charset=utf-8";
 

@@ -15,9 +15,8 @@
  */
 package edu.amherst.acdc.trellis.http;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.DateTimeException;
 

@@ -17,9 +17,9 @@ package edu.amherst.acdc.trellis.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
 import io.dropwizard.Configuration;
+
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
 

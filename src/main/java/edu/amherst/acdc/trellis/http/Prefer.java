@@ -38,10 +38,6 @@ import java.util.function.Function;
  */
 class Prefer {
 
-    public final static String PREFER = "Prefer";
-
-    public final static String PREFERENCE_APPLIED = "Preference-Applied";
-
     private final Optional<String> preference;
 
     private final Optional<String> handling;

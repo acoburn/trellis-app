@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.stream.Stream;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
@@ -39,6 +38,13 @@ class ResourceStreamer implements StreamingOutput {
     private final RDFSyntax syntax;
     private final String profile;
 
+    /**
+     * Create a streamable RDF resource
+     * @param service the serialization service
+     * @param stream the stream of quads
+     * @param syntax the RDF syntax to output
+     * @param profile the profile, if any
+     */
     public ResourceStreamer(final SerializationService service, final Stream<Quad> stream, final RDFSyntax syntax,
             final String profile) {
         this.service = service;
@@ -47,12 +53,18 @@ class ResourceStreamer implements StreamingOutput {
         this.profile = profile;
     }
 
+    /**
+     * Create a streamable RDF resource
+     * @param service the serialization service
+     * @param stream the stream of quads
+     * @param syntax the RDF syntax to output
+     */
     public ResourceStreamer(final SerializationService service, final Stream<Quad> stream, final RDFSyntax syntax) {
         this(service, stream, syntax, "");
     }
 
     @Override
-    public void write(final OutputStream os) throws IOException, WebApplicationException {
+    public void write(final OutputStream os) throws IOException {
         service.write(stream.map(Quad::asTriple), os, syntax, profileToIRI(profile));
     }
 

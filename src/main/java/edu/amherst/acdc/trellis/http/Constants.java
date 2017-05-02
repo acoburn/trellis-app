@@ -20,7 +20,7 @@ package edu.amherst.acdc.trellis.http;
  */
 final class Constants {
 
-    public static final String TRELLIS_PREFIX = "trellis:";
+    public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
     public static final String ACCEPT_DATETIME = "Accept-Datetime";
 
@@ -28,9 +28,19 @@ final class Constants {
 
     public static final String ACCEPT_POST = "Accept-Post";
 
+    public static final String DIGEST = "Digest";
+
     public static final String MEMENTO_DATETIME = "Memento-Datetime";
 
+    public static final String PREFER = "Prefer";
+
+    public static final String PREFERENCE_APPLIED = "Preference-Applied";
+
+    public static final String TRELLIS_PREFIX = "trellis:";
+
     public static final String VARY = "Vary";
+
+    public static final String WANT_DIGEST = "Want-Digest";
 
     private Constants() {
         // prevent instantiation

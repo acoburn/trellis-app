@@ -31,8 +31,10 @@ import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import io.dropwizard.views.View;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.rdf.api.IRI;
@@ -45,20 +47,33 @@ import org.apache.commons.rdf.api.Triple;
  */
 class ResourceView extends View {
 
-    private static final List<IRI> titleCandidates = asList(SKOS.prefLabel, RDFS.label, DC.title);
+    private static final Set<IRI> titleCandidates = new HashSet<>(asList(SKOS.prefLabel, RDFS.label, DC.title));
 
-    public class LabelledTriple {
+    /**
+     * A triple object with additional labels
+     */
+    public static class LabelledTriple {
 
         private final Triple triple;
         private final String predLabel;
         private final String objLabel;
 
+        /**
+         * Create a LabelledTriple
+         * @param triple the triple
+         * @param predicate the label for the predicate
+         * @param object the label for the object
+         */
         public LabelledTriple(final Triple triple, final String predicate, final String object) {
             this.triple = triple;
             this.predLabel = predicate;
             this.objLabel = object;
         }
 
+        /**
+         * Get the subject of the triple as a string
+         * @return a string form of the subject
+         */
         public String getSubject() {
             if (triple.getSubject() instanceof IRI) {
                 return ((IRI) triple.getSubject()).getIRIString();
@@ -66,10 +81,18 @@ class ResourceView extends View {
             return triple.getSubject().ntriplesString();
         }
 
+        /**
+         * Get the predicate of the triple as a string
+         * @return the string form of the predicate
+         */
         public String getPredicate() {
             return triple.getPredicate().getIRIString();
         }
 
+        /**
+         * Get the object of the triple as a string
+         * @return the string form of the object
+         */
         public String getObject() {
             if (triple.getObject() instanceof Literal) {
                 return ((Literal) triple.getObject()).getLexicalForm();
@@ -79,6 +102,10 @@ class ResourceView extends View {
             return triple.getObject().ntriplesString();
         }
 
+        /**
+         * Get the label for the predicate
+         * @return the predicate label
+         */
         public String getPredicateLabel() {
             if (nonNull(predLabel)) {
                 return predLabel;
@@ -86,6 +113,10 @@ class ResourceView extends View {
             return getPredicate();
         }
 
+        /**
+         * Get the label for the object
+         * @return the object label
+         */
         public String getObjectLabel() {
             if (nonNull(objLabel)) {
                 return objLabel;
@@ -98,6 +129,12 @@ class ResourceView extends View {
     private final List<Quad> quads;
     private final NamespaceService namespaceService;
 
+    /**
+     * Create a ResourceView object
+     * @param subject the subject
+     * @param quads the quads
+     * @param namespaceService a namespace service
+     */
     public ResourceView(final IRI subject, final List<Quad> quads, final NamespaceService namespaceService) {
         super("resource.mustache");
         this.subject = subject;
@@ -105,10 +142,18 @@ class ResourceView extends View {
         this.namespaceService = namespaceService;
     }
 
+    /**
+     * Get the triples
+     * @return the labelled triples
+     */
     public List<LabelledTriple> getTriples() {
         return quads.stream().map(Quad::asTriple).map(labelTriple).collect(toList());
     }
 
+    /**
+     * Get the title
+     * @return a title for the resource
+     */
     public String getTitle() {
         final Map<IRI, List<String>> titles = quads.stream()
             .filter(quad -> quad.getGraphName().equals(of(Trellis.PreferUserManaged)))
@@ -121,6 +166,10 @@ class ResourceView extends View {
             .orElseGet(this::getSubject);
     }
 
+    /**
+     * Get the subject
+     * @return the subject for the resource
+     */
     public String getSubject() {
         return subject.getIRIString();
     }
@@ -154,5 +203,4 @@ class ResourceView extends View {
         return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
             .orElse(iri);
     }
-
 }
