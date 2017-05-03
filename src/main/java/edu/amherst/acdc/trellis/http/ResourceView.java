@@ -31,6 +31,7 @@ import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import io.dropwizard.views.View;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,15 @@ class ResourceView extends View {
             if (nonNull(objLabel)) {
                 return objLabel;
             }
-            return getObject();
+            return objLabel;
+        }
+
+        /**
+         * Determine whether the object is an IRI
+         * @return true if the object is an IRI; false otherwise
+         */
+        public Boolean getObjectIsIRI() {
+            return triple.getObject() instanceof IRI;
         }
     }
 
@@ -147,7 +156,8 @@ class ResourceView extends View {
      * @return the labelled triples
      */
     public List<LabelledTriple> getTriples() {
-        return quads.stream().map(Quad::asTriple).map(labelTriple).collect(toList());
+        return quads.stream().map(Quad::asTriple).map(labelTriple)
+            .sorted(sortSubjects.thenComparing(sortPredicates).thenComparing(sortObjects)).collect(toList());
     }
 
     /**
@@ -203,4 +213,13 @@ class ResourceView extends View {
         return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
             .orElse(iri);
     }
+
+    private static final Comparator<LabelledTriple> sortSubjects = (q1, q2) ->
+        q1.getSubject().compareTo(q2.getSubject());
+
+    private static final Comparator<LabelledTriple> sortPredicates = (q1, q2) ->
+        q1.getPredicate().compareTo(q2.getPredicate());
+
+    private static final Comparator<LabelledTriple> sortObjects = (q1, q2) ->
+        q1.getObject().compareTo(q2.getObject());
 }

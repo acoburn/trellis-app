@@ -2,15 +2,106 @@
 <html>
     <head>
       <title>{{title}}</title>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+      <style>
+      a {
+          color: #7800a0;
+          text-decoration: none;
+          padding-bottom: .125em;
+          border-bottom: 1px solid #DFBFFF;
+      }
+      a:hover {
+          color: #4D2F71;
+          border-bottom: 1px solid #4D2F71;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-size: 1rem;
+        font-family: Lato, Helvetica, Arial, sans-serif;
+        line-height: 150%;
+        color: #555;
+        box-sizing: border-box;
+      }
+      header, footer {
+        background-color: #4D2F71;
+        color: white;
+        font-size: .9em;
+      }
+      header {
+        background: #4D2F71 no-repeat 40px 40px;
+        background-size: 375px;
+        min-height: 80px;
+        text-align: center;
+      }
+      footer {
+        padding: 20px;
+        text-align: center;
+        min-height: 1em;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+      }
+      main {
+        padding: 1em 4em 2em 4em;
+        max-width: 1140px;
+        margin: 0 auto;
+        background: white;
+      }
+      @media screen and (max-width: 800px) {
+        footer, main { padding: 1em; }
+        header {
+          background-size: 90%;
+          background-position: 18px 20px;
+          min-height: 80px;
+        }
+        header h1 { display: none; }
+      }
+
+      header h1 {
+        color: white;
+        line-height: 130%;
+        font-size: 2.6rem;
+        letter-spacing: -.02em;
+        font-weight: 400;
+        margin-top: 0;
+        padding-top: 20px;
+      }
+      hr {
+        border: 1px solid #ccc;
+        border-bottom-width: 0;
+        clear: both;
+      }
+      footer a {
+				color: white;
+				text-decoration: none;
+				padding-bottom: .125em;
+				border: 0;
+			}
+			footer a:hover {
+				color: #ddd;
+				text-decoration: none;
+				padding-bottom: .125em;
+				border-bottom: 1px solid #ddd;
+			}
+      p { margin: 10px; font-size: 18px; line-height: 160%; }
+      </style>
     </head>
     <body>
-      <h1>{{title}}</h1>
+      <header id="banner"><h1>{{title}}</h1></header>
       <main>
       {{#triples}}
       <p>
-        {{subject}} <a href="{{predicate}}">{{predicateLabel}}</a> <a href="{{object}}">{{objectLabel}}</a>
+        {{subject}} <a href="{{predicate}}">{{predicateLabel}}</a>
+        {{#objectIsIRI}}
+          <a href="{{object}}">{{objectLabel}}</a>
+        {{/objectIsIRI}}
+        {{^objectIsIRI}}
+          {{objectLabel}}
+        {{/objectIsIRI}}
       </p>
       {{/triples}}
       </main>
+      <footer><a href="https://github.com/trellis-ldp/trellis">Trellis Repository</a></footer>
     </body>
 </html>
