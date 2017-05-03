@@ -15,19 +15,8 @@
  */
 package edu.amherst.acdc.trellis.app;
 
-import static java.util.Arrays.asList;
-
-import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
-import edu.amherst.acdc.trellis.datastream.FileResolver;
 import edu.amherst.acdc.trellis.http.DateTimeExceptionMapper;
 import edu.amherst.acdc.trellis.http.LdpResource;
-import edu.amherst.acdc.trellis.io.JenaSerializationService;
-import edu.amherst.acdc.trellis.namespaces.NamespacesJsonContext;
-import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
-import edu.amherst.acdc.trellis.spi.DatastreamService;
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.ResourceService;
-import edu.amherst.acdc.trellis.spi.SerializationService;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -35,9 +24,6 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author acoburn
@@ -67,24 +53,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration configuration,
                     final Environment environment) throws IOException {
 
-        final Properties kafkaProps = new Properties();
-        final Properties zkProps = new Properties();
-        kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
-        zkProps.setProperty("connectString", configuration.getEnsemble());
+        final TrellisServiceFactory factory = new TrellisServiceFactory(configuration);
 
-        final Map<String, String> repositories = new HashMap<>();
-        configuration.getPartitions().forEach(partition -> repositories.put(partition.getName(), partition.getLdprs()));
-
-        final ResourceService resSvc = new FileResourceService(kafkaProps, zkProps, repositories);
-        final SerializationService ioSvc = new JenaSerializationService();
-        final NamespaceService nsSvc = new NamespacesJsonContext(configuration.getNamespaceFile());
-        final DatastreamService dsSvc = new DefaultDatastreamService();
-
-        dsSvc.setResolvers(asList(new FileResolver(configuration.getPartitions().get(0).getLdpnr())));
-        ioSvc.bind(nsSvc);
-
-        environment.jersey().register(
-                new LdpResource(configuration.getBaseUrl(), resSvc, ioSvc, dsSvc, nsSvc));
+        environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
+                    factory.createResourceService(),
+                    factory.createSerializationService(),
+                    factory.createDatastreamService(),
+                    factory.createNamespaceService()));
         environment.jersey().register(new DateTimeExceptionMapper());
     }
 }

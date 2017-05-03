@@ -20,6 +20,7 @@ import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_PATCH;
 import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_POST;
 import static edu.amherst.acdc.trellis.http.Constants.APPLICATION_LINK_FORMAT;
 import static edu.amherst.acdc.trellis.http.Constants.MEMENTO_DATETIME;
+import static edu.amherst.acdc.trellis.http.Constants.NOT_ACCEPTABLE_ERROR;
 import static edu.amherst.acdc.trellis.http.Constants.PREFER;
 import static edu.amherst.acdc.trellis.http.Constants.PREFERENCE_APPLIED;
 import static edu.amherst.acdc.trellis.http.Constants.TRELLIS_PREFIX;
@@ -35,8 +36,6 @@ import static java.util.Date.from;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.empty;
-import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_HTML;
@@ -44,7 +43,6 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -63,37 +61,20 @@ import edu.amherst.acdc.trellis.vocabulary.Trellis;
 
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
-import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.api.RDFTerm;
 import org.slf4j.Logger;
 
 /**
@@ -101,23 +82,14 @@ import org.slf4j.Logger;
  */
 @Path("{path: .+}")
 @Produces({TEXT_TURTLE, APPLICATION_LD_JSON, APPLICATION_N_TRIPLES, APPLICATION_LINK_FORMAT, TEXT_HTML})
-public class LdpResource {
+public class LdpResource extends BaseLdpResource {
 
     private static final Logger LOGGER = getLogger(LdpResource.class);
 
-    private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
-
     private final String baseUrl;
-    private final ResourceService resourceService;
     private final SerializationService serializationService;
     private final DatastreamService datastreamService;
     private final NamespaceService namespaceService;
-
-    @Context
-    private UriInfo uriInfo;
-
-    @Context
-    private HttpHeaders headers;
 
     /**
      * Create a LdpResource
@@ -131,8 +103,8 @@ public class LdpResource {
             final SerializationService serializationService,
             final DatastreamService datastreamService,
             final NamespaceService namespaceService) {
+        super(resourceService);
         this.baseUrl = baseUrl;
-        this.resourceService = resourceService;
         this.serializationService = serializationService;
         this.datastreamService = datastreamService;
         this.namespaceService = namespaceService;
@@ -146,9 +118,8 @@ public class LdpResource {
     @GET
     @Timed
     public Response getResource(@PathParam("path") final String path) {
-        // can this go somewhere more central?
         if (path.endsWith("/")) {
-            return Response.seeOther(fromUri(stripSlash(path)).build()).build();
+            return redirectWithoutSlash(path);
         }
 
         final String urlPrefix = ofNullable(baseUrl).orElseGet(() -> uriInfo.getBaseUri().toString());
@@ -166,6 +137,7 @@ public class LdpResource {
             resource = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path), version.get());
 
         } else if (timemap) {
+            // Return immediately
             return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path)).map(MementoResource::new)
                 .map(res -> res.getTimeMapBuilder(identifier, syntax, serializationService))
                 .orElse(Response.status(NOT_FOUND)).build();
@@ -188,9 +160,7 @@ public class LdpResource {
             final Response.ResponseBuilder builder = Response.ok();
 
             // Standard HTTP Headers
-            builder.lastModified(from(res.getModified()));
-            builder.variants(VARIANTS);
-            builder.header(VARY, PREFER);
+            builder.lastModified(from(res.getModified())).variants(VARIANTS).header(VARY, PREFER);
             syntax.map(s -> s.mediaType).ifPresent(builder::type);
 
             // Add LDP-required headers
@@ -211,12 +181,10 @@ public class LdpResource {
             res.getDatastream().ifPresent(ds -> {
                 if (syntax.isPresent()) {
                     // TODO make this identifier opaque
-                    builder.link(identifier + "#description", "canonical");
-                    builder.link(identifier, "describes");
+                    builder.link(identifier + "#description", "canonical").link(identifier, "describes");
                 } else {
-                    builder.link(identifier, "canonical");
-                    builder.link(identifier + "#description", "describedby");
-                    builder.type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
+                    builder.link(identifier, "canonical").link(identifier + "#description", "describedby")
+                        .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
                 }
             });
 
@@ -232,24 +200,24 @@ public class LdpResource {
             } else {
                 builder.header(VARY, ACCEPT_DATETIME);
             }
-            builder.link(identifier, "original timegate");
-            builder.links(MementoResource.getMementoLinks(identifier, res.getMementos()).toArray(Link[]::new));
+            builder.link(identifier, "original timegate")
+                .links(MementoResource.getMementoLinks(identifier, res.getMementos()).toArray(Link[]::new));
 
             // NonRDFSources responses (strong ETags, etc)
             if (res.getDatastream().isPresent() && !syntax.isPresent()) {
-                builder.tag(md5Hex(res.getDatastream().map(Datastream::getModified).get() + identifier));
                 final IRI dsid = res.getDatastream().map(Datastream::getIdentifier).get();
                 final InputStream datastream = datastreamService.getResolver(dsid).flatMap(svc -> svc.getContent(dsid))
                     .orElseThrow(() ->
                         new WebApplicationException("Could not load datastream resolver for " + dsid.getIRIString()));
-                builder.entity(datastream);
+                builder.tag(md5Hex(res.getDatastream().map(Datastream::getModified).get() + identifier))
+                    .entity(datastream);
 
             // RDFSource responses (weak ETags, etc)
             } else if (syntax.isPresent()) {
                 final Prefer prefer = new Prefer(ofNullable(headers.getRequestHeaders().getFirst(PREFER)).orElse(""));
-                builder.header(PREFERENCE_APPLIED, "return=" + prefer.getPreference().orElse("representation"));
-                builder.tag(new EntityTag(md5Hex(res.getModified() + identifier + syntax
-                            .map(RDFSyntax::toString).orElse("")), true));
+                builder.header(PREFERENCE_APPLIED, "return=" + prefer.getPreference().orElse("representation"))
+                    .tag(new EntityTag(md5Hex(res.getModified() + identifier + syntax.map(RDFSyntax::toString)
+                                    .orElse("")), true));
 
                 if (prefer.getPreference().filter("minimal"::equals).isPresent()) {
                     builder.status(NO_CONTENT);
@@ -267,10 +235,7 @@ public class LdpResource {
 
             // Other responses (typically, a request for application/link-format on an LDPR)
             } else {
-                final Map<String, Object> data = new HashMap<>();
-                data.put("code", NOT_ACCEPTABLE.getStatusCode());
-                data.put("message", "HTTP " + NOT_ACCEPTABLE.getStatusCode() + " " + NOT_ACCEPTABLE.getReasonPhrase());
-                return Response.status(NOT_ACCEPTABLE).type(APPLICATION_JSON).entity(data);
+                return Response.status(NOT_ACCEPTABLE).type(APPLICATION_JSON).entity(NOT_ACCEPTABLE_ERROR);
             }
 
             // TODO add acl header, if in effect
@@ -280,52 +245,5 @@ public class LdpResource {
 
             return builder;
         }).orElse(Response.status(NOT_FOUND)).build();
-    }
-
-    private static RDFTerm toExternalIri(final RDFTerm term, final String baseUrl) {
-        if (term instanceof IRI) {
-            final String iri = ((IRI) term).getIRIString();
-            if (iri.startsWith(TRELLIS_PREFIX)) {
-                return rdf.createIRI(baseUrl + iri.substring(TRELLIS_PREFIX.length()));
-            }
-        }
-        return term;
-    }
-
-    private static Function<Quad, Quad> unskolemize(final ResourceService svc, final String baseUrl) {
-        return quad -> rdf.createQuad(quad.getGraphName().orElse(Trellis.PreferUserManaged),
-                    (BlankNodeOrIRI) toExternalIri(svc.unskolemize(quad.getSubject()), baseUrl),
-                    quad.getPredicate(), toExternalIri(svc.unskolemize(quad.getObject()), baseUrl));
-    }
-
-    private static Set<String> getDefaultRepresentation() {
-        final Set<String> include = new HashSet<>();
-        include.add(LDP.PreferContainment.getIRIString());
-        include.add(LDP.PreferMembership.getIRIString());
-        include.add(Trellis.PreferUserManaged.getIRIString());
-        return include;
-    }
-
-    private static Predicate<Quad> filterWithPrefer(final Prefer prefer) {
-        final Set<String> include = getDefaultRepresentation();
-        prefer.getOmit().forEach(include::remove);
-        prefer.getInclude().forEach(include::add);
-        return quad -> quad.getGraphName().filter(x -> x instanceof IRI).map(x -> (IRI) x)
-            .map(IRI::getIRIString).filter(include::contains).isPresent();
-    }
-
-    private static final Function<MediaType, Stream<RDFSyntax>> getSyntax = type -> {
-        final Optional<RDFSyntax> syntax = VARIANTS.stream().map(Variant::getMediaType).filter(type::isCompatible)
-            .findFirst().map(MediaType::toString).flatMap(RDFSyntax::byMediaType);
-        // TODO replace with Optional::stream with JDK 9
-        return syntax.isPresent() ? of(syntax.get()) : empty();
-    };
-
-    private static Optional<RDFSyntax> getRdfSyntax(final List<MediaType> types) {
-        return types.stream().flatMap(getSyntax).findFirst();
-    }
-
-    private static String stripSlash(final String path) {
-        return path.endsWith("/") ? stripSlash(path.substring(0, path.length() - 1)) : path;
     }
 }

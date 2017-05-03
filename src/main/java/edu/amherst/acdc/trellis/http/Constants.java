@@ -15,6 +15,12 @@
  */
 package edu.amherst.acdc.trellis.http;
 
+import static java.util.Collections.unmodifiableMap;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author acoburn
  */
@@ -41,6 +47,11 @@ final class Constants {
     public static final String VARY = "Vary";
 
     public static final String WANT_DIGEST = "Want-Digest";
+
+    public static final Map<String, Object> NOT_ACCEPTABLE_ERROR = unmodifiableMap(new HashMap<String, Object>() { {
+        put("code", NOT_ACCEPTABLE.getStatusCode());
+        put("message", "HTTP " + NOT_ACCEPTABLE.getStatusCode() + " " + NOT_ACCEPTABLE.getReasonPhrase());
+    }});
 
     private Constants() {
         // prevent instantiation
