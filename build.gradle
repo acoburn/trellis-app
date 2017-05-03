@@ -144,11 +144,6 @@ publishing {
     }
 }
 
-processResources {
-    outputs.upToDateWhen { false }
-    expand project.properties
-}
-
 signing {
     required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives

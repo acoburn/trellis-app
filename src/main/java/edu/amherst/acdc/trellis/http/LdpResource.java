@@ -25,7 +25,6 @@ import static edu.amherst.acdc.trellis.http.Constants.PREFER;
 import static edu.amherst.acdc.trellis.http.Constants.PREFERENCE_APPLIED;
 import static edu.amherst.acdc.trellis.http.Constants.TRELLIS_PREFIX;
 import static edu.amherst.acdc.trellis.http.Constants.VARY;
-//import static edu.amherst.acdc.trellis.http.Constants.WANT_DIGEST;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_N_TRIPLES;
 import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -43,6 +42,8 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -128,8 +129,6 @@ public class LdpResource extends BaseLdpResource {
         final Optional<Instant> acceptDatetime = MementoResource.getAcceptDatetime(headers);
         final Optional<Instant> version = MementoResource.getVersionParam(uriInfo);
         final Boolean timemap = MementoResource.getTimeMapParam(uriInfo);
-        // TODO -- add digest support
-        //final Optional<String> wantDigest = ofNullable(headers.getRequestHeaders().getFirst(WANT_DIGEST));
 
         final Optional<Resource> resource;
         if (version.isPresent()) {
@@ -137,15 +136,16 @@ public class LdpResource extends BaseLdpResource {
             resource = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path), version.get());
 
         } else if (timemap) {
-            // Return immediately
+            // Short-circuit
             return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path)).map(MementoResource::new)
                 .map(res -> res.getTimeMapBuilder(identifier, syntax, serializationService))
-                .orElse(Response.status(NOT_FOUND)).build();
+                .orElse(status(NOT_FOUND)).build();
 
         } else if (acceptDatetime.isPresent()) {
+            // Short-circuit
             return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path), acceptDatetime.get())
                 .map(MementoResource::new).map(res -> res.getTimeGateBuilder(identifier, acceptDatetime.get()))
-                .orElse(Response.status(NOT_FOUND)).build();
+                .orElse(status(NOT_FOUND)).build();
 
         } else {
             resource = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path));
@@ -153,11 +153,11 @@ public class LdpResource extends BaseLdpResource {
 
         return resource.map(res -> {
             if (res.getTypes().anyMatch(Trellis.DeletedResource::equals)) {
-                return Response.status(GONE)
-                    .links(MementoResource.getMementoLinks(identifier, res.getMementos()).toArray(Link[]::new));
+                return status(GONE).links(MementoResource.getMementoLinks(identifier, res.getMementos())
+                        .toArray(Link[]::new));
             }
 
-            final Response.ResponseBuilder builder = Response.ok();
+            final Response.ResponseBuilder builder = ok();
 
             // Standard HTTP Headers
             builder.lastModified(from(res.getModified())).variants(VARIANTS).header(VARY, PREFER);
@@ -168,7 +168,7 @@ public class LdpResource extends BaseLdpResource {
                     LDP.RDFSource : res.getInteractionModel();
             ldpResourceTypes(model).forEach(type -> {
                 builder.link(type.getIRIString(), "type");
-                // Memento's don't accept POST or PATCH
+                // Mementos don't accept POST or PATCH
                 if (LDP.Container.equals(type) && !res.isMemento()) {
                     builder.header(ACCEPT_POST, VARIANTS.stream().map(Variant::getMediaType)
                             .map(mt -> mt.getType() + "/" + mt.getSubtype()).collect(joining(",")));
@@ -179,6 +179,8 @@ public class LdpResource extends BaseLdpResource {
 
             // Add NonRDFSource-related "describe*" link headers
             res.getDatastream().ifPresent(ds -> {
+                // TODO -- add digest support
+                //final Optional<String> wantDigest = ofNullable(headers.getRequestHeaders().getFirst(WANT_DIGEST));
                 if (syntax.isPresent()) {
                     // TODO make this identifier opaque
                     builder.link(identifier + "#description", "canonical").link(identifier, "describes");
@@ -235,7 +237,7 @@ public class LdpResource extends BaseLdpResource {
 
             // Other responses (typically, a request for application/link-format on an LDPR)
             } else {
-                return Response.status(NOT_ACCEPTABLE).type(APPLICATION_JSON).entity(NOT_ACCEPTABLE_ERROR);
+                return status(NOT_ACCEPTABLE).type(APPLICATION_JSON).entity(NOT_ACCEPTABLE_ERROR);
             }
 
             // TODO add acl header, if in effect
@@ -244,6 +246,6 @@ public class LdpResource extends BaseLdpResource {
             // TODO add support for range requests
 
             return builder;
-        }).orElse(Response.status(NOT_FOUND)).build();
+        }).orElse(status(NOT_FOUND)).build();
     }
 }
