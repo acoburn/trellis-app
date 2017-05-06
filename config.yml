@@ -1,9 +1,9 @@
 logging:
   level: WARN
   loggers:
-    edu.amherst.acdc.trellis.app: INFO
-    edu.amherst.acdc.trellis.http: INFO
-    edu.amherst.acdc.trellis.rosid.file: INFO
+    org.trellisldp.app: INFO
+    org.trellisldp.http: INFO
+    org.trellisldp.rosid.file: INFO
 
 partitions:
     - name: repository

@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,11 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.http;
+package org.trellisldp.http;
 
-import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_DATETIME;
-import static edu.amherst.acdc.trellis.http.Constants.APPLICATION_LINK_FORMAT;
-import static edu.amherst.acdc.trellis.http.Constants.VARY;
+import static org.trellisldp.http.Constants.ACCEPT_DATETIME;
+import static org.trellisldp.http.Constants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.Constants.VARY;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.ZonedDateTime.parse;
@@ -30,12 +28,12 @@ import static java.util.stream.Stream.empty;
 import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 
-import edu.amherst.acdc.trellis.api.Resource;
-import edu.amherst.acdc.trellis.api.VersionRange;
-import edu.amherst.acdc.trellis.spi.SerializationService;
-import edu.amherst.acdc.trellis.vocabulary.PROV;
-import edu.amherst.acdc.trellis.vocabulary.Trellis;
-import edu.amherst.acdc.trellis.vocabulary.XSD;
+import org.trellisldp.api.Resource;
+import org.trellisldp.api.VersionRange;
+import org.trellisldp.spi.SerializationService;
+import org.trellisldp.vocabulary.PROV;
+import org.trellisldp.vocabulary.Trellis;
+import org.trellisldp.vocabulary.XSD;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;

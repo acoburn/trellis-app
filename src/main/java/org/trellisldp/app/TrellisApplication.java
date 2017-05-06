@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.app;
+package org.trellisldp.app;
 
-import edu.amherst.acdc.trellis.http.DateTimeExceptionMapper;
-import edu.amherst.acdc.trellis.http.LdpResource;
+import org.trellisldp.http.DateTimeExceptionMapper;
+import org.trellisldp.http.LdpResource;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;

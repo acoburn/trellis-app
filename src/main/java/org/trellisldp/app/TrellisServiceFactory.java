@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,20 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.app;
+package org.trellisldp.app;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
-import edu.amherst.acdc.trellis.datastream.DefaultDatastreamService;
-import edu.amherst.acdc.trellis.datastream.FileResolver;
-import edu.amherst.acdc.trellis.io.JenaSerializationService;
-import edu.amherst.acdc.trellis.namespaces.NamespacesJsonContext;
-import edu.amherst.acdc.trellis.rosid.file.FileResourceService;
-import edu.amherst.acdc.trellis.spi.DatastreamService;
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.ResourceService;
-import edu.amherst.acdc.trellis.spi.SerializationService;
+import org.trellisldp.datastream.DefaultDatastreamService;
+import org.trellisldp.datastream.FileResolver;
+import org.trellisldp.io.JenaSerializationService;
+import org.trellisldp.namespaces.NamespacesJsonContext;
+import org.trellisldp.rosid.file.FileResourceService;
+import org.trellisldp.spi.DatastreamService;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.ResourceService;
+import org.trellisldp.spi.SerializationService;
 
 import java.io.IOException;
 import java.util.HashMap;

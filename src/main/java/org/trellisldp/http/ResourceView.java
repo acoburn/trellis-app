@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.http;
+package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
@@ -23,11 +21,11 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.vocabulary.DC;
-import edu.amherst.acdc.trellis.vocabulary.RDFS;
-import edu.amherst.acdc.trellis.vocabulary.SKOS;
-import edu.amherst.acdc.trellis.vocabulary.Trellis;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.RDFS;
+import org.trellisldp.vocabulary.SKOS;
+import org.trellisldp.vocabulary.Trellis;
 
 import io.dropwizard.views.View;
 
@@ -134,7 +132,7 @@ class ResourceView extends View {
         }
     }
 
-    private final IRI subject;
+    private final String subject;
     private final List<Quad> quads;
     private final NamespaceService namespaceService;
 
@@ -144,7 +142,7 @@ class ResourceView extends View {
      * @param quads the quads
      * @param namespaceService a namespace service
      */
-    public ResourceView(final IRI subject, final List<Quad> quads, final NamespaceService namespaceService) {
+    public ResourceView(final String subject, final List<Quad> quads, final NamespaceService namespaceService) {
         super("resource.mustache");
         this.subject = subject;
         this.quads = quads;
@@ -181,7 +179,7 @@ class ResourceView extends View {
      * @return the subject for the resource
      */
     public String getSubject() {
-        return subject.getIRIString();
+        return subject;
     }
 
     private Function<Triple, LabelledTriple> labelTriple = triple -> {

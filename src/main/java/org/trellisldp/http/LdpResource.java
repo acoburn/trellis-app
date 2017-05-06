@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,24 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.http;
+package org.trellisldp.http;
 
-import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_DATETIME;
-import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_PATCH;
-import static edu.amherst.acdc.trellis.http.Constants.ACCEPT_POST;
-import static edu.amherst.acdc.trellis.http.Constants.APPLICATION_LINK_FORMAT;
-import static edu.amherst.acdc.trellis.http.Constants.MEMENTO_DATETIME;
-import static edu.amherst.acdc.trellis.http.Constants.NOT_ACCEPTABLE_ERROR;
-import static edu.amherst.acdc.trellis.http.Constants.PREFER;
-import static edu.amherst.acdc.trellis.http.Constants.PREFERENCE_APPLIED;
-import static edu.amherst.acdc.trellis.http.Constants.TRELLIS_PREFIX;
-import static edu.amherst.acdc.trellis.http.Constants.VARY;
-import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_LD_JSON;
-import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_N_TRIPLES;
-import static edu.amherst.acdc.trellis.http.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static edu.amherst.acdc.trellis.http.RdfMediaType.TEXT_TURTLE;
-import static edu.amherst.acdc.trellis.http.RdfMediaType.VARIANTS;
-import static edu.amherst.acdc.trellis.spi.ConstraintService.ldpResourceTypes;
+import static org.trellisldp.http.Constants.ACCEPT_DATETIME;
+import static org.trellisldp.http.Constants.ACCEPT_PATCH;
+import static org.trellisldp.http.Constants.ACCEPT_POST;
+import static org.trellisldp.http.Constants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.Constants.MEMENTO_DATETIME;
+import static org.trellisldp.http.Constants.NOT_ACCEPTABLE_ERROR;
+import static org.trellisldp.http.Constants.PREFER;
+import static org.trellisldp.http.Constants.PREFERENCE_APPLIED;
+import static org.trellisldp.http.Constants.TRELLIS_PREFIX;
+import static org.trellisldp.http.Constants.VARY;
+import static org.trellisldp.http.RdfMediaType.APPLICATION_LD_JSON;
+import static org.trellisldp.http.RdfMediaType.APPLICATION_N_TRIPLES;
+import static org.trellisldp.http.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.RdfMediaType.VARIANTS;
+import static org.trellisldp.spi.ConstraintService.ldpResourceTypes;
 import static java.util.Date.from;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -50,15 +48,15 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.codahale.metrics.annotation.Timed;
 
-import edu.amherst.acdc.trellis.api.Datastream;
-import edu.amherst.acdc.trellis.api.Resource;
-import edu.amherst.acdc.trellis.spi.DatastreamService;
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.ResourceService;
-import edu.amherst.acdc.trellis.spi.SerializationService;
-import edu.amherst.acdc.trellis.vocabulary.LDP;
-import edu.amherst.acdc.trellis.vocabulary.OA;
-import edu.amherst.acdc.trellis.vocabulary.Trellis;
+import org.trellisldp.api.Datastream;
+import org.trellisldp.api.Resource;
+import org.trellisldp.spi.DatastreamService;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.ResourceService;
+import org.trellisldp.spi.SerializationService;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.OA;
+import org.trellisldp.vocabulary.Trellis;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -225,7 +223,7 @@ public class LdpResource extends BaseLdpResource {
                     builder.status(NO_CONTENT);
                 } else if (syntax.get().equals(RDFA_HTML)) {
                     builder.entity(
-                            new ResourceView(res.getIdentifier(), res.stream().filter(filterWithPrefer(prefer))
+                            new ResourceView(identifier, res.stream().filter(filterWithPrefer(prefer))
                                 .map(unskolemize(resourceService, urlPrefix)).collect(toList()), namespaceService));
                 } else {
                     // TODO add support for json-ld profile data (4th param)
