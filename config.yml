@@ -1,12 +1,12 @@
 logging:
   level: WARN
   loggers:
-    org.trellisldp.io: DEBUG
+    org.trellisldp.io: INFO
     org.trellisldp.app: INFO
     org.trellisldp.http: INFO
     org.trellisldp.rosid.file: INFO
 
-partitions:
+storage:
     - name: repository
       ldpnr: /Users/acoburn/trellisData/datastreams
       ldprs: /Users/acoburn/trellisData/objects

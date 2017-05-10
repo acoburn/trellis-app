@@ -60,7 +60,7 @@ class TrellisServiceFactory {
             config.setProperty("kafka.bootstrap.servers", configuration.getBootstrapServers());
             config.setProperty("zk.connectString", configuration.getEnsemble());
 
-            configuration.getPartitions().forEach(partition ->
+            configuration.getStorage().forEach(partition ->
                 config.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
 
             resourceService = new FileResourceService(null, config);

@@ -19,7 +19,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * @author acoburn
  */
-public class PartitionConfiguration {
+public class StorageConfiguration {
 
     @NotEmpty
     private String ldprs;

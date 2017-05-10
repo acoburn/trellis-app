@@ -39,16 +39,16 @@ public class TrellisConfiguration extends Configuration {
     private String bootstrapServers;
 
     @NotEmpty
-    private List<PartitionConfiguration> partitions;
+    private List<StorageConfiguration> partitions;
 
     private String baseUrl;
 
     /**
-     * Get the partitions for this repository
-     * @return the partitions
+     * Get the storage partitions for this repository
+     * @return the storage partitions
      */
     @JsonProperty
-    public List<PartitionConfiguration> getPartitions() {
+    public List<StorageConfiguration> getStorage() {
         return partitions;
     }
 
@@ -57,7 +57,7 @@ public class TrellisConfiguration extends Configuration {
      * @param partitions the partitions
      */
     @JsonProperty
-    public void setPartitions(final List<PartitionConfiguration> partitions) {
+    public void setStorage(final List<StorageConfiguration> partitions) {
         this.partitions = partitions;
     }
 
