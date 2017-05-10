@@ -16,6 +16,9 @@ package org.trellisldp.app;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.trellisldp.datastream.DefaultDatastreamService;
 import org.trellisldp.datastream.FileResolver;
 import org.trellisldp.io.JenaSerializationService;
@@ -25,11 +28,6 @@ import org.trellisldp.spi.DatastreamService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
 import org.trellisldp.spi.SerializationService;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author acoburn
@@ -58,15 +56,14 @@ class TrellisServiceFactory {
      */
     public synchronized ResourceService createResourceService() throws IOException {
         if (isNull(resourceService)) {
-            final Properties kafkaProps = new Properties();
-            final Properties zkProps = new Properties();
-            kafkaProps.setProperty("bootstrap.servers", configuration.getBootstrapServers());
-            zkProps.setProperty("connectString", configuration.getEnsemble());
+            final Properties config = new Properties();
+            config.setProperty("kafka.bootstrap.servers", configuration.getBootstrapServers());
+            config.setProperty("zk.connectString", configuration.getEnsemble());
 
-            final Map<String, String> repositories = new HashMap<>();
-            configuration.getPartitions()
-                .forEach(partition -> repositories.put(partition.getName(), partition.getLdprs()));
-            resourceService = new FileResourceService(kafkaProps, zkProps, repositories);
+            configuration.getPartitions().forEach(partition ->
+                config.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
+
+            resourceService = new FileResourceService(null, config);
         }
         return resourceService;
     }
@@ -77,8 +74,7 @@ class TrellisServiceFactory {
      */
     public synchronized SerializationService createSerializationService() {
         if (isNull(serializationService)) {
-            serializationService = new JenaSerializationService();
-            serializationService.bind(createNamespaceService());
+            serializationService = new JenaSerializationService(createNamespaceService());
         }
         return serializationService;
     }
@@ -100,8 +96,7 @@ class TrellisServiceFactory {
      */
     public synchronized DatastreamService createDatastreamService() {
         if (isNull(datastreamService)) {
-            datastreamService = new DefaultDatastreamService();
-            datastreamService.setResolvers(asList(new FileResolver(configuration.getPartitions().get(0).getLdpnr())));
+            datastreamService = new DefaultDatastreamService(asList(new FileResolver()));
         }
         return datastreamService;
     }

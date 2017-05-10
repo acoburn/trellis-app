@@ -1,6 +1,7 @@
 logging:
   level: WARN
   loggers:
+    org.trellisldp.io: DEBUG
     org.trellisldp.app: INFO
     org.trellisldp.http: INFO
     org.trellisldp.rosid.file: INFO

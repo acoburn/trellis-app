@@ -13,15 +13,15 @@
  */
 package org.trellisldp.app;
 
-import org.trellisldp.http.DateTimeExceptionMapper;
-import org.trellisldp.http.LdpResource;
-
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
 
 import java.io.IOException;
+
+import org.trellisldp.http.AdminResource;
+import org.trellisldp.http.DateTimeExceptionMapper;
+import org.trellisldp.http.LdpResource;
 
 /**
  * @author acoburn
@@ -44,7 +44,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TrellisConfiguration> bootstrap) {
-        bootstrap.addBundle(new ViewBundle<>());
     }
 
     @Override
@@ -53,11 +52,11 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final TrellisServiceFactory factory = new TrellisServiceFactory(configuration);
 
+        environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
                     factory.createResourceService(),
                     factory.createSerializationService(),
-                    factory.createDatastreamService(),
-                    factory.createNamespaceService()));
+                    factory.createDatastreamService()));
         environment.jersey().register(new DateTimeExceptionMapper());
     }
 }

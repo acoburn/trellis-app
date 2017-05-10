@@ -44,6 +44,7 @@ ext {
     trellisIoJenaVersion = '0.1.0-SNAPSHOT'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisNamespacesVersion = '0.1.0-SNAPSHOT'
+    trellisHttpVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
     httpClientVersion = '4.5.2'
@@ -70,9 +71,9 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-namespaces', version: trellisNamespacesVersion
     compile group: 'org.trellisldp', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'org.trellisldp', name: 'trellis-http', version: trellisHttpVersion
     compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
-    compile group: 'io.dropwizard', name: 'dropwizard-views-mustache', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
