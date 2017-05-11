@@ -26,16 +26,16 @@ import org.apache.zookeeper.KeeperException;
 /**
  * @author acoburn
  */
-public class ZookeeperHealthCheck extends HealthCheck {
+public class KafkaHealthCheck extends HealthCheck {
 
-    private final int timeout = 1000;
     private final String connectString;
+    private final int timeout = 1000;
 
     /**
      * Create an object that checks the health of a zk ensemble
      * @param connectString the connection string
      */
-    public ZookeeperHealthCheck(final String connectString) {
+    public KafkaHealthCheck(final String connectString) {
         this.connectString = connectString;
     }
 
@@ -48,10 +48,10 @@ public class ZookeeperHealthCheck extends HealthCheck {
                 return unhealthy("Connection to Zookeeper took too long.");
             } else if (!zk.isConnected()) {
                 return unhealthy("Could not connect to zookeeper: " + connectString);
-            } else if (!zk.getZooKeeper().getState().isAlive()) {
-                return unhealthy("Zookeeper ensemble is not alive.");
+            } else if (zk.getZooKeeper().getChildren("/brokers/ids", false).isEmpty()) {
+                return unhealthy("No Kafka brokers are connected.");
             }
-            return healthy("Zookeeper appears to be healthy.");
+            return healthy("Kafka appears to be in fine health.");
         } catch (final IOException ex) {
             return unhealthy("Error connecting to Zookeeper: " + ex.getMessage());
         } catch (final KeeperException ex) {

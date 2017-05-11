@@ -19,7 +19,7 @@ import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
 
-//import org.trellisldp.app.health.KafkaHealthCheck;
+import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.DateTimeExceptionMapper;
@@ -54,8 +54,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final TrellisServiceFactory factory = new TrellisServiceFactory(configuration);
 
-        environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(configuration.getEnsemble(), 1000));
-        //environment.healthChecks().register("kafka", new KafkaHealthCheck(configuration.getBootstrapServers()));
+        environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(configuration.getEnsemble()));
+        environment.healthChecks().register("kafka", new KafkaHealthCheck(configuration.getEnsemble()));
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
                     factory.createResourceService(),
