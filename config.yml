@@ -1,10 +1,8 @@
 logging:
   level: WARN
   loggers:
-    org.trellisldp.io: INFO
-    org.trellisldp.app: INFO
-    org.trellisldp.http: INFO
-    org.trellisldp.rosid.file: INFO
+    org.trellisldp: INFO
+    io.dropwizard: INFO
 
 storage:
     - name: repository
