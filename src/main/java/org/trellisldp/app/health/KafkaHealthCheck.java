@@ -13,13 +13,14 @@
  */
 package org.trellisldp.app.health;
 
+import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static com.codahale.metrics.health.HealthCheck.Result.healthy;
 import static com.codahale.metrics.health.HealthCheck.Result.unhealthy;
 
 import java.io.IOException;
 
 import com.codahale.metrics.health.HealthCheck;
-import org.apache.curator.CuratorZookeeperClient;
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.KeeperException;
 
@@ -29,7 +30,7 @@ import org.apache.zookeeper.KeeperException;
 public class KafkaHealthCheck extends HealthCheck {
 
     private final String connectString;
-    private final int timeout = 1000;
+    private final int timeout = 2000;
 
     /**
      * Create an object that checks the health of a zk ensemble
@@ -41,14 +42,12 @@ public class KafkaHealthCheck extends HealthCheck {
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorZookeeperClient zk = new CuratorZookeeperClient(connectString, timeout, timeout, evt -> { },
-                    new RetryNTimes(10, 1000))) {
+        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(10, timeout))) {
             zk.start();
-            if (!zk.blockUntilConnectedOrTimedOut()) {
-                return unhealthy("Connection to Zookeeper took too long.");
-            } else if (!zk.isConnected()) {
+            zk.blockUntilConnected();
+            if (!zk.getZookeeperClient().isConnected()) {
                 return unhealthy("Could not connect to zookeeper: " + connectString);
-            } else if (zk.getZooKeeper().getChildren("/brokers/ids", false).isEmpty()) {
+            } else if (zk.getZookeeperClient().getZooKeeper().getChildren("/brokers/ids", false).isEmpty()) {
                 return unhealthy("No Kafka brokers are connected.");
             }
             return healthy("Kafka appears to be in fine health.");
