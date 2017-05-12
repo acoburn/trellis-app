@@ -52,10 +52,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration configuration,
                     final Environment environment) throws IOException {
 
+        final int timeout = 1000;
         final TrellisServiceFactory factory = new TrellisServiceFactory(configuration);
 
-        environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(configuration.getEnsemble()));
-        environment.healthChecks().register("kafka", new KafkaHealthCheck(configuration.getEnsemble()));
+        environment.healthChecks().register("zookeeper",
+                new ZookeeperHealthCheck(configuration.getEnsemble(), timeout));
+        environment.healthChecks().register("kafka",
+                new KafkaHealthCheck(configuration.getEnsemble(), timeout));
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
                     factory.createResourceService(),

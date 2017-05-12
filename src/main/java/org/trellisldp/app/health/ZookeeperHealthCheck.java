@@ -13,50 +13,55 @@
  */
 package org.trellisldp.app.health;
 
-import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static com.codahale.metrics.health.HealthCheck.Result.healthy;
 import static com.codahale.metrics.health.HealthCheck.Result.unhealthy;
+import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
+import static org.trellisldp.rosid.common.RosidConstants.ZNODE_COORDINATION;
+
+import com.codahale.metrics.health.HealthCheck;
 
 import java.io.IOException;
 
-import com.codahale.metrics.health.HealthCheck;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.RetryNTimes;
-import org.apache.zookeeper.KeeperException;
 
 /**
  * @author acoburn
  */
 public class ZookeeperHealthCheck extends HealthCheck {
 
-    private final int timeout = 2000;
+    private static final int retries = 10;
+    private final int timeout;
     private final String connectString;
 
     /**
      * Create an object that checks the health of a zk ensemble
      * @param connectString the connection string
+     * @param timeout the timeout
      */
-    public ZookeeperHealthCheck(final String connectString) {
+    public ZookeeperHealthCheck(final String connectString, final int timeout) {
+        super();
         this.connectString = connectString;
+        this.timeout = timeout;
     }
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(10, timeout))) {
+        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(retries, timeout))) {
             zk.start();
             zk.blockUntilConnected();
             if (!zk.getZookeeperClient().isConnected()) {
                 return unhealthy("Could not connect to zookeeper: " + connectString);
             } else if (!zk.getZookeeperClient().getZooKeeper().getState().isAlive()) {
                 return unhealthy("Zookeeper ensemble is not alive.");
+            } else if (zk.checkExists().forPath(ZNODE_COORDINATION) == null) {
+                return unhealthy("Zookeeper not properly initialized");
             }
             return healthy("Zookeeper appears to be healthy.");
         } catch (final IOException ex) {
             return unhealthy("Error connecting to Zookeeper: " + ex.getMessage());
-        } catch (final KeeperException ex) {
-            return unhealthy("Error fetching kafka broker list: " + ex.getMessage());
         } catch (final Exception ex) {
-            return unhealthy("Error checking on Kafka: " + ex.getMessage());
+            return unhealthy("Error checking on Zookeeper: " + ex.getMessage());
         }
     }
 }

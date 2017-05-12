@@ -13,13 +13,14 @@
  */
 package org.trellisldp.app.health;
 
-import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static com.codahale.metrics.health.HealthCheck.Result.healthy;
 import static com.codahale.metrics.health.HealthCheck.Result.unhealthy;
+import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
+
+import com.codahale.metrics.health.HealthCheck;
 
 import java.io.IOException;
 
-import com.codahale.metrics.health.HealthCheck;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.KeeperException;
@@ -29,20 +30,24 @@ import org.apache.zookeeper.KeeperException;
  */
 public class KafkaHealthCheck extends HealthCheck {
 
+    private static final int retries = 10;
+    private final int timeout;
     private final String connectString;
-    private final int timeout = 2000;
 
     /**
      * Create an object that checks the health of a zk ensemble
      * @param connectString the connection string
+     * @param timeout the timeout
      */
-    public KafkaHealthCheck(final String connectString) {
+    public KafkaHealthCheck(final String connectString, final int timeout) {
+        super();
         this.connectString = connectString;
+        this.timeout = timeout;
     }
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(10, timeout))) {
+        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(retries, timeout))) {
             zk.start();
             zk.blockUntilConnected();
             if (!zk.getZookeeperClient().isConnected()) {
