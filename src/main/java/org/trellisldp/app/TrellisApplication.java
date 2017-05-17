@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.http.AdminResource;
-import org.trellisldp.http.DateTimeExceptionMapper;
 import org.trellisldp.http.LdpResource;
 
 /**
@@ -64,6 +63,5 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                     factory.createResourceService(),
                     factory.createSerializationService(),
                     factory.createDatastreamService()));
-        environment.jersey().register(new DateTimeExceptionMapper());
     }
 }
