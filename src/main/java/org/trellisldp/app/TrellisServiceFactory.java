@@ -19,24 +19,24 @@ import static java.util.Objects.isNull;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.trellisldp.datastream.DefaultDatastreamService;
-import org.trellisldp.datastream.FileResolver;
-import org.trellisldp.io.JenaSerializationService;
+import org.trellisldp.binary.DefaultBinaryService;
+import org.trellisldp.binary.FileResolver;
+import org.trellisldp.io.JenaIOService;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.rosid.file.FileResourceService;
-import org.trellisldp.spi.DatastreamService;
+import org.trellisldp.spi.BinaryService;
+import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
-import org.trellisldp.spi.SerializationService;
 
 /**
  * @author acoburn
  */
 class TrellisServiceFactory {
 
-    private SerializationService serializationService = null;
+    private IOService ioService = null;
     private NamespaceService namespaceService = null;
-    private DatastreamService datastreamService = null;
+    private BinaryService binaryService = null;
     private ResourceService resourceService = null;
 
     private final TrellisConfiguration configuration;
@@ -69,14 +69,14 @@ class TrellisServiceFactory {
     }
 
     /**
-     * Create a SerializationService
+     * Create a IOService
      * @return the serialization service
      */
-    public synchronized SerializationService createSerializationService() {
-        if (isNull(serializationService)) {
-            serializationService = new JenaSerializationService(createNamespaceService());
+    public synchronized IOService createIOService() {
+        if (isNull(ioService)) {
+            ioService = new JenaIOService(createNamespaceService());
         }
-        return serializationService;
+        return ioService;
     }
 
     /**
@@ -91,13 +91,13 @@ class TrellisServiceFactory {
     }
 
     /**
-     * Create a DatastreamService
+     * Create a BinaryService
      * @return the datastream service
      */
-    public synchronized DatastreamService createDatastreamService() {
-        if (isNull(datastreamService)) {
-            datastreamService = new DefaultDatastreamService(asList(new FileResolver()));
+    public synchronized BinaryService createBinaryService() {
+        if (isNull(binaryService)) {
+            binaryService = new DefaultBinaryService(asList(new FileResolver()));
         }
-        return datastreamService;
+        return binaryService;
     }
 }
