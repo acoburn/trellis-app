@@ -41,6 +41,9 @@ public class TrellisConfiguration extends Configuration {
     @NotEmpty
     private List<StorageConfiguration> partitions;
 
+    @NotEmpty
+    private String topic = "trellis";
+
     private String baseUrl;
 
     /**
@@ -131,6 +134,24 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getEnsemble() {
         return ensemble;
+    }
+
+    /**
+     * Set the event topic name
+     * @param topic the name of the event topic
+     */
+    @JsonProperty
+    public void setTopic(final String topic) {
+        this.topic = topic;
+    }
+
+    /**
+     * Get the event topic name
+     * @return the name of the event topic
+     */
+    @JsonProperty
+    public String getTopic() {
+        return topic;
     }
 
     /**

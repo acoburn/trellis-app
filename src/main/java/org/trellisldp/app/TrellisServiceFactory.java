@@ -21,10 +21,13 @@ import java.util.Properties;
 
 import org.trellisldp.binary.DefaultBinaryService;
 import org.trellisldp.binary.FileResolver;
+import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.spi.BinaryService;
+import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
@@ -38,6 +41,7 @@ class TrellisServiceFactory {
     private NamespaceService namespaceService = null;
     private BinaryService binaryService = null;
     private ResourceService resourceService = null;
+    private ConstraintService constraintService = null;
 
     private final TrellisConfiguration configuration;
 
@@ -63,7 +67,8 @@ class TrellisServiceFactory {
             configuration.getStorage().forEach(partition ->
                 config.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
 
-            resourceService = new FileResourceService(null, config);
+            resourceService = new FileResourceService(new KafkaPublisher(configuration.getBootstrapServers(),
+                        configuration.getTopic()), config);
         }
         return resourceService;
     }
@@ -88,6 +93,13 @@ class TrellisServiceFactory {
             namespaceService = new NamespacesJsonContext(configuration.getNamespaceFile());
         }
         return namespaceService;
+    }
+
+    public synchronized ConstraintService createConstraintService() {
+        if (isNull(constraintService)) {
+            constraintService = new LdpConstraints(configuration.getBaseUrl());
+        }
+        return constraintService;
     }
 
     /**

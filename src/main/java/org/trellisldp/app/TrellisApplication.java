@@ -62,6 +62,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
                     factory.createResourceService(),
                     factory.createIOService(),
+                    factory.createConstraintService(),
                     factory.createBinaryService()));
     }
 }
