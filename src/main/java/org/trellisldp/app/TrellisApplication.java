@@ -13,16 +13,33 @@
  */
 package org.trellisldp.app;
 
+import static java.util.Arrays.asList;
+
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
+import org.trellisldp.binary.DefaultBinaryService;
+import org.trellisldp.binary.FileResolver;
+import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.LdpResource;
+import org.trellisldp.io.JenaIOService;
+import org.trellisldp.kafka.KafkaPublisher;
+import org.trellisldp.namespaces.NamespacesJsonContext;
+import org.trellisldp.rosid.file.FileResourceService;
+import org.trellisldp.spi.BinaryService;
+import org.trellisldp.spi.ConstraintService;
+import org.trellisldp.spi.EventService;
+import org.trellisldp.spi.IOService;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.ResourceService;
+
 
 /**
  * @author acoburn
@@ -48,21 +65,29 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     }
 
     @Override
-    public void run(final TrellisConfiguration configuration,
+    public void run(final TrellisConfiguration config,
                     final Environment environment) throws IOException {
 
         final int timeout = 1000;
-        final TrellisServiceFactory factory = new TrellisServiceFactory(configuration);
 
-        environment.healthChecks().register("zookeeper",
-                new ZookeeperHealthCheck(configuration.getEnsemble(), timeout));
-        environment.healthChecks().register("kafka",
-                new KafkaHealthCheck(configuration.getEnsemble(), timeout));
+        final Properties props = new Properties();
+        props.setProperty("kafka.bootstrap.servers", config.getBootstrapServers());
+        props.setProperty("zk.connectString", config.getEnsemble());
+
+        config.getStorage().forEach(partition ->
+            props.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
+
+        final EventService eventService = new KafkaPublisher(config.getBootstrapServers(), config.getTopic());
+        final ResourceService resourceService = new FileResourceService(eventService, props);
+        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
+        final IOService ioService = new JenaIOService(namespaceService);
+        final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
+        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()));
+
+        environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
+        environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
         environment.jersey().register(new AdminResource());
-        environment.jersey().register(new LdpResource(configuration.getBaseUrl(),
-                    factory.createResourceService(),
-                    factory.createIOService(),
-                    factory.createConstraintService(),
-                    factory.createBinaryService()));
+        environment.jersey().register(new LdpResource(config.getBaseUrl(),
+                    resourceService, ioService, constraintService, binaryService));
     }
 }
