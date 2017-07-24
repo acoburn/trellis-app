@@ -13,3 +13,4 @@ storage:
 namespaceFile: /Users/acoburn/trellisData/namespaces.json
 ensemble: localhost:2181
 bootstrapServers: localhost:9092
+unsupportedTypes: [message/external-body]
