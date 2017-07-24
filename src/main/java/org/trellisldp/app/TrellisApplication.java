@@ -107,6 +107,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(config.getBaseUrl(),
-                    resourceService, ioService, constraintService, binaryService));
+                    resourceService, ioService, constraintService, binaryService, config.getUnsupportedTypes()));
     }
 }

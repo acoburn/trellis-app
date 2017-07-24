@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app;
 
+import static java.util.Arrays.asList;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
@@ -45,6 +47,8 @@ public class TrellisConfiguration extends Configuration {
     private String topic = "trellis";
 
     private String baseUrl;
+
+    private List<String> unsupportedTypes = asList("message/external-body");
 
     /**
      * Get the storage partitions for this repository
@@ -170,5 +174,23 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public void setBaseUrl(final String baseUrl) {
         this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Get any unsupported types
+     * @return unsupported mimeTypes
+     */
+    @JsonProperty
+    public List<String> getUnsupportedTypes() {
+        return unsupportedTypes;
+    }
+
+    /**
+     * Set any unsupported types
+     * @param unsupportedTypes any unsupported mimetypes
+     */
+    @JsonProperty
+    public void setUnsupportedTypes(final List<String> unsupportedTypes) {
+        this.unsupportedTypes = unsupportedTypes;
     }
 }
