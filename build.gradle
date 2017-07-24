@@ -33,7 +33,6 @@ ext {
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     trellisIoJenaVersion = '0.1.0-SNAPSHOT'
-    trellisKafkaVersion = '0.1.0-SNAPSHOT'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisNamespacesVersion = '0.1.0-SNAPSHOT'
     trellisHttpVersion = '0.1.0-SNAPSHOT'
@@ -61,7 +60,6 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-binary', version: trellisBinaryVersion
     compile group: 'org.trellisldp', name: 'trellis-constraint-rules', version: trellisConstraintVersion
     compile group: 'org.trellisldp', name: 'trellis-io-jena', version: trellisIoJenaVersion
-    compile group: 'org.trellisldp', name: 'trellis-kafka', version: trellisKafkaVersion
     compile group: 'org.trellisldp', name: 'trellis-namespaces', version: trellisNamespacesVersion
     compile group: 'org.trellisldp', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
