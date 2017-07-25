@@ -14,6 +14,7 @@
 package org.trellisldp.app;
 
 import static java.util.Arrays.asList;
+import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 
 import io.dropwizard.Application;
@@ -37,10 +38,12 @@ import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.spi.BinaryService;
 import org.trellisldp.spi.ConstraintService;
+import org.trellisldp.spi.EventService;
 import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
@@ -97,7 +100,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("value.serializer", "org.trellisldp.rosid.common.DatasetSerialization");
         final Producer<String, Dataset> producer = new KafkaProducer<>(producerProps);
 
-        final ResourceService resourceService = new FileResourceService(props, curator, producer);
+        final EventService notifications = new KafkaPublisher(config.getBootstrapServers(), TOPIC_EVENT);
+
+        final ResourceService resourceService = new FileResourceService(props, curator, producer,
+                notifications);
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
         final IOService ioService = new JenaIOService(namespaceService);
         final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
