@@ -100,7 +100,18 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("value.serializer", "org.trellisldp.rosid.common.DatasetSerialization");
         final Producer<String, Dataset> producer = new KafkaProducer<>(producerProps);
 
-        final EventService notifications = new KafkaPublisher(config.getBootstrapServers(), TOPIC_EVENT);
+        final Properties otherProducerProps = new Properties();
+        otherProducerProps.setProperty("bootstrap.servers", config.getBootstrapServers());
+        otherProducerProps.setProperty("acks", "all");
+        otherProducerProps.setProperty("retries", "0");
+        otherProducerProps.setProperty("batch.size", "16384");
+        otherProducerProps.setProperty("linger.ms", "1");
+        otherProducerProps.setProperty("buffer.memory", "33554432");
+        otherProducerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        otherProducerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        final Producer<String, String> otherProducer = new KafkaProducer<>(otherProducerProps);
+
+        final EventService notifications = new KafkaPublisher(otherProducer, TOPIC_EVENT);
 
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
                 notifications);
