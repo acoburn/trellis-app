@@ -38,6 +38,7 @@ import org.trellisldp.binary.FileResolver;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.LdpResource;
+import org.trellisldp.id.IdGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.namespaces.NamespacesJsonContext;
@@ -45,6 +46,7 @@ import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.spi.BinaryService;
 import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.EventService;
+import org.trellisldp.spi.IdGeneratorService;
 import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
@@ -121,6 +123,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
 
         final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()));
+
+        final IdGeneratorService idService = new IdGenerator();
 
         environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
         environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
