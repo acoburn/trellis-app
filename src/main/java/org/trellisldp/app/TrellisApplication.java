@@ -22,6 +22,8 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -90,6 +92,11 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 new BoundedExponentialBackoffRetry(retryMs, retryMaxMs, retryMax));
         curator.start();
 
+        // TODO -- make this configurable
+        final Map<String, String> ioProperties = new HashMap<>();
+        ioProperties.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        ioProperties.put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+
         // TODO -- move these into the configuration class
         final Properties producerProps = new Properties();
         producerProps.setProperty("bootstrap.servers", config.getBootstrapServers());
@@ -106,9 +113,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
                 notifications, async);
+
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
-        final IOService ioService = new JenaIOService(namespaceService);
+
+        final IOService ioService = new JenaIOService(namespaceService, ioProperties);
+
         final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
+
         final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()));
 
         environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
