@@ -24,7 +24,6 @@ import io.dropwizard.setup.Environment;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -97,21 +96,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("linger.ms", "1");
         producerProps.setProperty("buffer.memory", "33554432");
         producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        producerProps.setProperty("value.serializer", "org.trellisldp.rosid.common.DatasetSerialization");
-        final Producer<String, Dataset> producer = new KafkaProducer<>(producerProps);
+        producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        final Producer<String, String> producer = new KafkaProducer<>(producerProps);
 
-        final Properties otherProducerProps = new Properties();
-        otherProducerProps.setProperty("bootstrap.servers", config.getBootstrapServers());
-        otherProducerProps.setProperty("acks", "all");
-        otherProducerProps.setProperty("retries", "0");
-        otherProducerProps.setProperty("batch.size", "16384");
-        otherProducerProps.setProperty("linger.ms", "1");
-        otherProducerProps.setProperty("buffer.memory", "33554432");
-        otherProducerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        otherProducerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        final Producer<String, String> otherProducer = new KafkaProducer<>(otherProducerProps);
-
-        final EventService notifications = new KafkaPublisher(otherProducer, TOPIC_EVENT);
+        final EventService notifications = new KafkaPublisher(producer, TOPIC_EVENT);
 
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
                 notifications);
