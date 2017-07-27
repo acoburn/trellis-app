@@ -14,8 +14,8 @@
 package org.trellisldp.app;
 
 import static java.util.Arrays.asList;
-import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
+import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -79,6 +79,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final int retryMs = 2000;
         final int retryMaxMs = 30000;
         final int retryMax = 10;
+        // Make this configurable
+        final Boolean async = false;
 
         final Properties props = new Properties();
         config.getStorage().forEach(partition ->
@@ -88,6 +90,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 new BoundedExponentialBackoffRetry(retryMs, retryMaxMs, retryMax));
         curator.start();
 
+        // TODO -- move these into the configuration class
         final Properties producerProps = new Properties();
         producerProps.setProperty("bootstrap.servers", config.getBootstrapServers());
         producerProps.setProperty("acks", "all");
@@ -102,7 +105,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final EventService notifications = new KafkaPublisher(producer, TOPIC_EVENT);
 
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
-                notifications);
+                notifications, async);
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
         final IOService ioService = new JenaIOService(namespaceService);
         final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
