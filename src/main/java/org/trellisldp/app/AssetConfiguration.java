@@ -17,11 +17,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author acoburn
@@ -88,6 +88,10 @@ class AssetConfiguration {
         return js;
     }
 
+    /**
+     * Get these properties as a Map
+     * @return a Map with these properties
+     */
     public Map<String, String> asMap() {
         final Map<String, String> data = new HashMap<>();
         data.put("icon", icon);
