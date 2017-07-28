@@ -4,8 +4,8 @@ logging:
     org.trellisldp: INFO
     io.dropwizard: INFO
 
-storage:
-    - name: repository
+partitions:
+    - id: repository
       ldpnr: /Users/acoburn/trellisData/datastreams
       ldprs: /Users/acoburn/trellisData/objects
       url: http://localhost:8080/repository

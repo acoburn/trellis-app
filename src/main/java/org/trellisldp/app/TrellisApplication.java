@@ -79,35 +79,33 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws IOException {
 
-        final int timeout = 1000;
-        final int retryMs = 2000;
-        final int retryMaxMs = 30000;
-        final int retryMax = 10;
-        // Make thess configurable
-        final Boolean async = false;
-
-        // TODO -- make this configurable
+        // TODO -- make this configurable (e.g. AssetConfiguration)
         final Map<String, String> ioProperties = new HashMap<>();
         ioProperties.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
         ioProperties.put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
 
-        // TODO -- move these into the configuration class
+        // Kafka producer configuration
         final Properties producerProps = new Properties();
-        producerProps.setProperty("bootstrap.servers", config.getBootstrapServers());
-        producerProps.setProperty("acks", "all");
-        producerProps.setProperty("retries", "0");
-        producerProps.setProperty("batch.size", "16384");
-        producerProps.setProperty("linger.ms", "1");
-        producerProps.setProperty("buffer.memory", "33554432");
+        producerProps.setProperty("bootstrap.servers", config.getKafka().getBootstrapServers());
+        producerProps.setProperty("acks", config.getKafka().getAcks());
+        producerProps.setProperty("retries", config.getKafka().getRetries().toString());
+        producerProps.setProperty("batch.size", config.getKafka().getBatchSize().toString());
+        producerProps.setProperty("linger.ms", config.getKafka().getLingerMs().toString());
+        producerProps.setProperty("buffer.memory", config.getKafka().getBufferMemory().toString());
         producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         final Properties props = new Properties();
-        config.getStorage().forEach(partition ->
-            props.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
+        final Map<String, String> partitions = new HashMap<>();
+        config.getPartitions().forEach(partition -> {
+            partitions.put(partition.getId(), partition.getBaseUrl());
+            props.setProperty("trellis.storage." + partition.getId() + ".resources",
+                partition.getResources().getPath());
+        });
 
-        final CuratorFramework curator = newClient(config.getEnsemble(),
-                new BoundedExponentialBackoffRetry(retryMs, retryMaxMs, retryMax));
+        final CuratorFramework curator = newClient(config.getZookeeper().getEnsembleServers(),
+                new BoundedExponentialBackoffRetry(config.getZookeeper().getRetryMs(),
+                    config.getZookeeper().getRetryMaxMs(), config.getZookeeper().getRetryMax()));
         curator.start();
 
         final Producer<String, String> producer = new KafkaProducer<>(producerProps);
@@ -117,21 +115,25 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final IdentifierService idService = new UUIDGenerator();
 
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
-                notifications, idService.getSupplier(), async);
+                notifications, idService.getSupplier(), config.getAsync());
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
 
         final IOService ioService = new JenaIOService(namespaceService, ioProperties);
 
-        final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
+        final ConstraintService constraintService = new LdpConstraints();
 
         final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idService);
 
-        environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
-        environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
+        environment.healthChecks()
+            .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
+                        config.getZookeeper().getTimeout()));
+        environment.healthChecks()
+            .register("kafka", new KafkaHealthCheck(config.getZookeeper().getEnsembleServers(),
+                        config.getZookeeper().getTimeout()));
         environment.jersey().register(new AdminResource());
-        environment.jersey().register(new LdpResource(config.getBaseUrl(),
-                    resourceService, ioService, constraintService, binaryService,
-                    config.getUnsupportedTypes()));
+        environment.jersey()
+            .register(new LdpResource(resourceService, ioService, constraintService, binaryService, partitions,
+                        config.getUnsupportedTypes()));
     }
 }

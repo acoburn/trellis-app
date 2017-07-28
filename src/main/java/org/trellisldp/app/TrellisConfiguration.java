@@ -35,27 +35,46 @@ public class TrellisConfiguration extends Configuration {
     private String defaultName = "Trellis";
 
     @NotEmpty
-    private String ensemble;
+    private List<PartitionConfiguration> partitions;
 
     @NotEmpty
-    private String bootstrapServers;
+    private KafkaConfiguration kafka;
 
     @NotEmpty
-    private List<StorageConfiguration> partitions;
+    private ZookeeperConfiguration zookeeper;
 
     @NotEmpty
     private String topic = "trellis";
 
-    private String baseUrl;
+    @NotEmpty
+    private Boolean async = false;
 
     private List<String> unsupportedTypes = asList("message/external-body");
+
+    /**
+     * Set async mode
+     * @param async true if async mode is enabled; false otherwise
+     */
+    @JsonProperty
+    public void setAsync(final Boolean async) {
+        this.async = async;
+    }
+
+    /**
+     * Get async mode
+     * @return true if async mode is enabled; false otherwise
+     */
+    @JsonProperty
+    public Boolean getAsync() {
+        return async;
+    }
 
     /**
      * Get the storage partitions for this repository
      * @return the storage partitions
      */
     @JsonProperty
-    public List<StorageConfiguration> getStorage() {
+    public List<PartitionConfiguration> getPartitions() {
         return partitions;
     }
 
@@ -64,7 +83,7 @@ public class TrellisConfiguration extends Configuration {
      * @param partitions the partitions
      */
     @JsonProperty
-    public void setStorage(final List<StorageConfiguration> partitions) {
+    public void setPartitions(final List<PartitionConfiguration> partitions) {
         this.partitions = partitions;
     }
 
@@ -105,39 +124,39 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the kafka bootstrap server locations
-     * @param bootstrapServers a comma-delimited list of kafka servers
+     * Set the kafka configuration
+     * @param config the Kafka configuration
      */
     @JsonProperty
-    public void setBootstrapServers(final String bootstrapServers) {
-        this.bootstrapServers = bootstrapServers;
+    public void setKafka(final KafkaConfiguration config) {
+        this.kafka = config;
     }
 
     /**
-     * Get the kafka bootstrap server locations
-     * @return the kafka bootstrap server locations
+     * Get the kafka configuration
+     * @return the kafka configuration
      */
     @JsonProperty
-    public String getBootstrapServers() {
-        return bootstrapServers;
+    public KafkaConfiguration getKafka() {
+        return kafka;
     }
 
     /**
-     * Set the zookeeper ensemble locations
-     * @param ensemble a comma-delimited list of zookeeper servers
+     * Set the zookeeper configuration
+     * @param zookeeper the zookeeper configuration
      */
     @JsonProperty
-    public void setEnsemble(final String ensemble) {
-        this.ensemble = ensemble;
+    public void setZookeeper(final ZookeeperConfiguration zookeeper) {
+        this.zookeeper = zookeeper;
     }
 
     /**
-     * Get the zookeeper ensemble locations
-     * @return the zookeeper ensemble locations
+     * Get the zookeeper configuration
+     * @return the zookeeper configuration
      */
     @JsonProperty
-    public String getEnsemble() {
-        return ensemble;
+    public ZookeeperConfiguration getZookeeper() {
+        return zookeeper;
     }
 
     /**
@@ -156,24 +175,6 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getTopic() {
         return topic;
-    }
-
-    /**
-     * Get the base URL location
-     * @return the baes URL
-     */
-    @JsonProperty
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    /**
-     * Set the base URL location
-     * @param baseUrl the base URL
-     */
-    @JsonProperty
-    public void setBaseUrl(final String baseUrl) {
-        this.baseUrl = baseUrl;
     }
 
     /**

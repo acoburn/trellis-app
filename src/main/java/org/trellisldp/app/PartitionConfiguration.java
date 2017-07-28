@@ -19,36 +19,36 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * @author acoburn
  */
-public class StorageConfiguration {
+class PartitionConfiguration {
 
     @NotEmpty
-    private String ldprs;
+    private ResourceConfiguration resources;
 
     @NotEmpty
-    private String ldpnr;
+    private BinaryConfiguration binaries;
 
     @NotEmpty
-    private String name;
+    private String id;
 
     @NotEmpty
     private String url;
 
     /**
      * Get the name of the partition
-     * @return the partition name
+     * @return the partition id
      */
     @JsonProperty
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
     /**
      * Set the name of the partition
-     * @param name the partition name
+     * @param id the partition name
      */
     @JsonProperty
-    public void setName(final String name) {
-        this.name = name;
+    public void setId(final String id) {
+        this.id = id;
     }
 
     /**
@@ -56,7 +56,7 @@ public class StorageConfiguration {
      * @return the partition baseURL
      */
     @JsonProperty
-    public String getUrl() {
+    public String getBaseUrl() {
         return url;
     }
 
@@ -65,7 +65,7 @@ public class StorageConfiguration {
      * @param url the partition baseURL
      */
     @JsonProperty
-    public void setUrl(final String url) {
+    public void setBaseUrl(final String url) {
         this.url = url;
     }
 
@@ -74,8 +74,8 @@ public class StorageConfiguration {
      * @return the LDP-RS directory
      */
     @JsonProperty
-    public String getLdprs() {
-        return ldprs;
+    public ResourceConfiguration getResources() {
+        return resources;
     }
 
     /**
@@ -83,25 +83,25 @@ public class StorageConfiguration {
      * @param directory the LDP-RS directory
      */
     @JsonProperty
-    public void setLdprs(final String directory) {
-        this.ldprs = directory;
+    public void setResources(final ResourceConfiguration config) {
+        this.resources = config;
     }
 
     /**
-     * Get the LDP-NR directory
-     * @return the LDP-NR directory
+     * Get the binary configuration
+     * @return the binary configuration
      */
     @JsonProperty
-    public String getLdpnr() {
-        return ldpnr;
+    public BinaryConfiguration getBinaries() {
+        return binaries;
     }
 
     /**
-     * Set the LDP-NR directory
-     * @param directory the LDP-NR directory
+     * Set the binary configuration
+     * @param config the binary configuration
      */
     @JsonProperty
-    public void setLdpnr(final String directory) {
-        this.ldpnr = directory;
+    public void setBinaries(final BinaryConfiguration config) {
+        this.binaries = config;
     }
 }
