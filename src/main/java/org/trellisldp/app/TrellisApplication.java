@@ -114,8 +114,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final EventService notifications = new KafkaPublisher(producer, TOPIC_EVENT);
 
+        final IdentifierService idService = new UUIDGenerator();
+
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
-                notifications, async);
+                notifications, idService.getSupplier(), async);
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
 
@@ -123,15 +125,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ConstraintService constraintService = new LdpConstraints(config.getBaseUrl());
 
-        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()));
-
-        final IdentifierService idService = new UUIDGenerator();
+        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idService);
 
         environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
         environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(config.getBaseUrl(),
-                    resourceService, ioService, constraintService, binaryService, idService.getSupplier(),
+                    resourceService, ioService, constraintService, binaryService,
                     config.getUnsupportedTypes()));
     }
 }
