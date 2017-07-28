@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * @author acoburn
  */
-public class TrellisConfiguration extends Configuration {
+class TrellisConfiguration extends Configuration {
 
     @NotEmpty
     private String namespaceFile;

@@ -13,10 +13,11 @@
  */
 package org.trellisldp.app;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.dropwizard.Configuration;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -24,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * @author acoburn
  */
-public class KafkaConfiguration extends Configuration {
+class KafkaConfiguration {
 
     private static final String DEFAULT_ACKS = "all";
     private static final Integer DEFAULT_BATCH_SIZE = 16384;
@@ -35,20 +36,13 @@ public class KafkaConfiguration extends Configuration {
     @NotEmpty
     private String bootstrapServers;
 
-    @NotEmpty
-    private String acks = DEFAULT_ACKS;
-
-    @NotEmpty
-    private Integer retries = DEFAULT_RETRIES;
-
-    @NotEmpty
-    private Integer batchSize = DEFAULT_BATCH_SIZE;
-
-    @NotEmpty
-    private Integer lingerMs = DEFAULT_LINGER_MS;
-
-    @NotEmpty
-    private Integer bufferMemory = DEFAULT_BUFFER_MEMORY;
+    private Map<String, String> other = new HashMap<String, String>() { {
+        put("acks", DEFAULT_ACKS);
+        put("batch.size", DEFAULT_BATCH_SIZE.toString());
+        put("retries", DEFAULT_RETRIES.toString());
+        put("linger.ms", DEFAULT_LINGER_MS.toString());
+        put("buffer.memory", DEFAULT_BUFFER_MEMORY.toString());
+    }};
 
     /**
      * Set the kafka bootstrap server locations
@@ -69,107 +63,23 @@ public class KafkaConfiguration extends Configuration {
     }
 
     /**
-     * Set the Acks value (e.g. "all")
-     * @param acks the acks value
+     * Set configuration values dynamically
+     * @param name the configuration name
+     * @param value the value
      */
-    @JsonProperty
-    public void setAcks(final String acks) {
-        this.acks = acks;
+    @JsonAnySetter
+    public void set(final String name, final String value) {
+        other.put(name, value);
     }
 
-    /**
-     * Get the Acks value
-     * @return the acks value
-     */
-    @JsonProperty
-    public String getAcks() {
-        return acks;
-    }
-
-    /**
-     * Set the retries value
-     * @param retries the number of retries
-     */
-    @JsonProperty
-    public void setRetries(final Integer retries) {
-        this.retries = retries;
-    }
-
-    /**
-     * Get the retries value
-     * @return the number of retries
-     */
-    @JsonProperty
-    public Integer getRetries() {
-        return retries;
-    }
-
-    /**
-     * Set the batch.size value
-     * @param batchSize the size of a batch
-     */
-    @JsonProperty
-    public void setBatchSize(final Integer batchSize) {
-        this.batchSize = batchSize;
-    }
-
-    /**
-     * Get the batch.size value
-     * @return the batch size
-     */
-    @JsonProperty
-    public Integer getBatchSize() {
-        return batchSize;
-    }
-
-    /**
-     * Set the linger.ms value, in milliseconds
-     * @param lingerMs the number of milliseconds to linger
-     */
-    @JsonProperty
-    public void setLingerMs(final Integer lingerMs) {
-        this.lingerMs = lingerMs;
-    }
-
-    /**
-     * Get the linger.ms value, in milliseconds
-     * @return the number of milliseconds to linger
-     */
-    @JsonProperty
-    public Integer getLingerMs() {
-        return lingerMs;
-    }
-
-    /**
-     * Set the buffer.memory value
-     * @param bufferMemory the buffer.memory value
-     */
-    @JsonProperty
-    public void setBufferMemory(final Integer bufferMemory) {
-        this.bufferMemory = bufferMemory;
-    }
-
-    /**
-     * Get the buffer.memory value
-     * @return the buffer.memory value
-     */
-    @JsonProperty
-    public Integer getBufferMemory() {
-        return bufferMemory;
-    }
-
-    /**
+   /**
      * Get all configuration values in a Properties object
      * @return the properties
      */
     public Properties asProperties() {
         final Properties props = new Properties();
+        other.forEach((k, v) -> props.setProperty(k, v));
         props.setProperty("bootstrap.servers", bootstrapServers);
-        props.setProperty("acks", acks);
-        props.setProperty("retries", retries.toString());
-        props.setProperty("batch.size", batchSize.toString());
-        props.setProperty("linger.ms", lingerMs.toString());
-        props.setProperty("buffer.memory", bufferMemory.toString());
         return props;
     }
 }

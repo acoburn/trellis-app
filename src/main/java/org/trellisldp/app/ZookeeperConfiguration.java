@@ -15,14 +15,12 @@ package org.trellisldp.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.dropwizard.Configuration;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author acoburn
  */
-public class ZookeeperConfiguration extends Configuration {
+class ZookeeperConfiguration {
 
     private static final Integer DEFAULT_TIMEOUT = 1000;
     private static final Integer DEFAULT_RETRY_MS = 2000;

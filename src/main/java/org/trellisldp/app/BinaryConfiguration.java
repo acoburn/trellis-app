@@ -13,7 +13,12 @@
  */
 package org.trellisldp.app;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
@@ -24,11 +29,7 @@ class BinaryConfiguration {
     @NotEmpty
     private String prefix;
 
-    private String path = "";
-
-    private Integer hierarchy = 0;
-
-    private Integer size = 0;
+    private Map<String, String> other = new HashMap<String, String>();
 
     /**
      * Get the prefix value for new binary identifiers
@@ -49,56 +50,22 @@ class BinaryConfiguration {
     }
 
     /**
-     * Get the levels of hierarchy desired for new identifiers
-     * @return the hierarchy level
+     * Set configuration values dynamically
+     * @param name the configuration name
+     * @param value the value
      */
-    @JsonProperty
-    public Integer getHierarchy() {
-        return hierarchy;
+    @JsonAnySetter
+    public void set(final String name, final String value) {
+        other.put(name, value);
     }
 
     /**
-     * Set the levels of hierarchy desired for new identifiers
-     * @param hierarchy the hierarchy level
+     * Get a dynamically set property
+     * @param name the property name
+     * @param defaultValue a default value
+     * @return the corresponding value
      */
-    @JsonProperty
-    public void setHierarchy(final Integer hierarchy) {
-        this.hierarchy = hierarchy;
-    }
-
-    /**
-     * Get the size of hierarchy levels
-     * @return the size of hierarchy levels
-     */
-    @JsonProperty
-    public Integer getSize() {
-        return size;
-    }
-
-    /**
-     * Set the size of hierarchy levels
-     * @param size the size or length of hierarchy segments
-     */
-    @JsonProperty
-    public void setSize(final Integer size) {
-        this.size = size;
-    }
-
-    /**
-     * Get the underlying path for file-based binary resources
-     * @return the path
-     */
-    @JsonProperty
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Set the underlying path for file-based binary resources
-     * @param path the path
-     */
-    @JsonProperty
-    public void setPath(final String path) {
-        this.path = path;
+    public String getOrDefault(final String name, final String defaultValue) {
+        return other.getOrDefault(name, defaultValue);
     }
 }
