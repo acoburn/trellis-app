@@ -86,14 +86,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         // Make thess configurable
         final Boolean async = false;
 
-        final Properties props = new Properties();
-        config.getStorage().forEach(partition ->
-            props.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
-
-        final CuratorFramework curator = newClient(config.getEnsemble(),
-                new BoundedExponentialBackoffRetry(retryMs, retryMaxMs, retryMax));
-        curator.start();
-
         // TODO -- make this configurable
         final Map<String, String> ioProperties = new HashMap<>();
         ioProperties.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
@@ -109,6 +101,15 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("buffer.memory", "33554432");
         producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        final Properties props = new Properties();
+        config.getStorage().forEach(partition ->
+            props.setProperty("trellis.storage." + partition.getName() + ".resources", partition.getLdprs()));
+
+        final CuratorFramework curator = newClient(config.getEnsemble(),
+                new BoundedExponentialBackoffRetry(retryMs, retryMaxMs, retryMax));
+        curator.start();
+
         final Producer<String, String> producer = new KafkaProducer<>(producerProps);
 
         final EventService notifications = new KafkaPublisher(producer, TOPIC_EVENT);
