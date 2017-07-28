@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
@@ -86,7 +88,14 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final Properties props = new Properties();
         final Map<String, String> partitions = new HashMap<>();
+        final Map<String, Supplier<String>> idSuppliers = new HashMap<>();
+
         config.getPartitions().forEach(partition -> {
+            // This is good for file: protocols, but not for others
+            final Integer levels = parseInt(partition.getBinaries().getOrDefault("levels", "4"), 10);
+            final Integer length = parseInt(partition.getBinaries().getOrDefault("length", "2"), 10);
+            final IdentifierService idSvc = new UUIDGenerator(levels, length);
+            idSuppliers.put(partition.getId(), idSvc.getSupplier(partition.getBinaries().getPrefix()));
             partitions.put(partition.getId(), partition.getBaseUrl());
             props.setProperty("trellis.storage." + partition.getId() + ".resources",
                 partition.getResources().getPath());
@@ -112,7 +121,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ConstraintService constraintService = new LdpConstraints();
 
-        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idService);
+        // TODO file resolver needs a method for accessing `path` values
+        // it will probably be necessary to revamp the interface of this constructor, i.e. adding another
+        // Map<String, Properties> argument (String partition -> Properties config)
+        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idSuppliers);
 
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
