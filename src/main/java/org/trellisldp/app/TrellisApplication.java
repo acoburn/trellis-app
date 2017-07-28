@@ -46,8 +46,8 @@ import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.spi.BinaryService;
 import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.EventService;
-import org.trellisldp.spi.IdGeneratorService;
 import org.trellisldp.spi.IOService;
+import org.trellisldp.spi.IdSupplierService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
 
@@ -83,7 +83,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final int retryMs = 2000;
         final int retryMaxMs = 30000;
         final int retryMax = 10;
-        // Make this configurable
+        // Make thess configurable
         final Boolean async = false;
 
         final Properties props = new Properties();
@@ -124,12 +124,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()));
 
-        final IdGeneratorService idService = new IdGenerator();
+        final IdSupplierService idService = new IdGenerator();
 
         environment.healthChecks().register("zookeeper", new ZookeeperHealthCheck(config.getEnsemble(), timeout));
         environment.healthChecks().register("kafka", new KafkaHealthCheck(config.getEnsemble(), timeout));
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new LdpResource(config.getBaseUrl(),
-                    resourceService, ioService, constraintService, binaryService, config.getUnsupportedTypes()));
+                    resourceService, ioService, constraintService, binaryService, idService.getSupplier(),
+                    config.getUnsupportedTypes()));
     }
 }
