@@ -79,19 +79,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws IOException {
 
-        // TODO -- make this configurable (e.g. AssetConfiguration)
-        final Map<String, String> ioProperties = new HashMap<>();
-        ioProperties.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
-        ioProperties.put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-
         // Kafka producer configuration
-        final Properties producerProps = new Properties();
-        producerProps.setProperty("bootstrap.servers", config.getKafka().getBootstrapServers());
-        producerProps.setProperty("acks", config.getKafka().getAcks());
-        producerProps.setProperty("retries", config.getKafka().getRetries().toString());
-        producerProps.setProperty("batch.size", config.getKafka().getBatchSize().toString());
-        producerProps.setProperty("linger.ms", config.getKafka().getLingerMs().toString());
-        producerProps.setProperty("buffer.memory", config.getKafka().getBufferMemory().toString());
+        final Properties producerProps = config.getKafka().asProperties();
         producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
@@ -119,7 +108,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
 
-        final IOService ioService = new JenaIOService(namespaceService, ioProperties);
+        final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
 
         final ConstraintService constraintService = new LdpConstraints();
 

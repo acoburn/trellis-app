@@ -17,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
 
+import java.util.Properties;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
@@ -154,5 +156,20 @@ public class KafkaConfiguration extends Configuration {
     @JsonProperty
     public Integer getBufferMemory() {
         return bufferMemory;
+    }
+
+    /**
+     * Get all configuration values in a Properties object
+     * @return the properties
+     */
+    public Properties asProperties() {
+        final Properties props = new Properties();
+        props.setProperty("bootstrap.servers", bootstrapServers);
+        props.setProperty("acks", acks);
+        props.setProperty("retries", retries.toString());
+        props.setProperty("batch.size", batchSize.toString());
+        props.setProperty("linger.ms", lingerMs.toString());
+        props.setProperty("buffer.memory", bufferMemory.toString());
+        return props;
     }
 }

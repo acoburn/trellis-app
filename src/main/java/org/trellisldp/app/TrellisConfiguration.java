@@ -35,6 +35,9 @@ public class TrellisConfiguration extends Configuration {
     private String defaultName = "Trellis";
 
     @NotEmpty
+    private AssetConfiguration assets;
+
+    @NotEmpty
     private List<PartitionConfiguration> partitions;
 
     @NotEmpty
@@ -67,6 +70,24 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public Boolean getAsync() {
         return async;
+    }
+
+    /**
+     * Set the asset configuration
+     * @param assets the asset config
+     */
+    @JsonProperty
+    public void setAssets(final AssetConfiguration assets) {
+        this.assets = assets;
+    }
+
+    /**
+     * Get the asset configuration
+     * @return the asset config
+     */
+    @JsonProperty
+    public AssetConfiguration getAssets() {
+        return assets;
     }
 
     /**
