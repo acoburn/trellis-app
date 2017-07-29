@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
@@ -50,6 +49,7 @@ import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.EventService;
 import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.IdentifierService;
+import org.trellisldp.spi.IdentifierService.IdentifierConfiguration;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
 
@@ -86,16 +86,17 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
+        // Other configurations
         final Properties props = new Properties();
         final Map<String, String> partitions = new HashMap<>();
-        final Map<String, Supplier<String>> idSuppliers = new HashMap<>();
+        final Map<String, IdentifierConfiguration> idConfigs = new HashMap<>();
 
         config.getPartitions().forEach(partition -> {
             // This is good for file: protocols, but not for others
             final Integer levels = parseInt(partition.getBinaries().getOrDefault("levels", "4"), 10);
             final Integer length = parseInt(partition.getBinaries().getOrDefault("length", "2"), 10);
-            final IdentifierService idSvc = new UUIDGenerator(levels, length);
-            idSuppliers.put(partition.getId(), idSvc.getSupplier(partition.getBinaries().getPrefix()));
+            final String prefix = partition.getBinaries().getPrefix();
+            idConfigs.put(partition.getId(), new IdentifierConfiguration(prefix, levels, length));
             partitions.put(partition.getId(), partition.getBaseUrl());
             props.setProperty("trellis.storage." + partition.getId() + ".resources",
                 partition.getResources().getPath());
@@ -122,9 +123,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ConstraintService constraintService = new LdpConstraints();
 
         // TODO file resolver needs a method for accessing `path` values
-        // it will probably be necessary to revamp the interface of this constructor, i.e. adding another
-        // Map<String, Properties> argument (String partition -> Properties config)
-        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idSuppliers);
+        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idService, idConfigs);
 
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
