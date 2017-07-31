@@ -13,8 +13,8 @@
  */
 package org.trellisldp.app;
 
-import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 
@@ -23,7 +23,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -49,7 +48,6 @@ import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.EventService;
 import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.IdentifierService;
-import org.trellisldp.spi.IdentifierService.IdentifierConfiguration;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
 
@@ -87,20 +85,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         producerProps.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         // Other configurations
-        final Properties props = new Properties();
-        final Map<String, String> partitions = new HashMap<>();
-        final Map<String, IdentifierConfiguration> idConfigs = new HashMap<>();
-
-        config.getPartitions().forEach(partition -> {
-            // This is good for file: protocols, but not for others
-            final Integer levels = parseInt(partition.getBinaries().getOrDefault("levels", "4"), 10);
-            final Integer length = parseInt(partition.getBinaries().getOrDefault("length", "2"), 10);
-            final String prefix = partition.getBinaries().getPrefix();
-            idConfigs.put(partition.getId(), new IdentifierConfiguration(prefix, levels, length));
-            partitions.put(partition.getId(), partition.getBaseUrl());
-            props.setProperty("trellis.storage." + partition.getId() + ".resources",
-                partition.getResources().getPath());
-        });
+        final Map<String, Properties> partitions = config.getPartitions().stream()
+            .collect(toMap(PartitionConfiguration::getId, p -> {
+                final Properties props = p.getBinaries().asProperties();
+                props.setProperty("baseUrl", p.getBaseUrl());
+                props.setProperty("resourcePath", p.getResources().getPath());
+                return props;
+            }));
 
         final CuratorFramework curator = newClient(config.getZookeeper().getEnsembleServers(),
                 new BoundedExponentialBackoffRetry(config.getZookeeper().getRetryMs(),
@@ -113,6 +104,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final IdentifierService idService = new UUIDGenerator();
 
+        final Properties props = new Properties();
+        partitions.forEach((k, v) -> props.setProperty("trellis.storage." + k + ".resources",
+                    v.getProperty("resourcePath")));
         final ResourceService resourceService = new FileResourceService(props, curator, producer,
                 notifications, idService.getSupplier(), config.getAsync());
 
@@ -123,7 +117,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ConstraintService constraintService = new LdpConstraints();
 
         // TODO file resolver needs a method for accessing `path` values
-        final BinaryService binaryService = new DefaultBinaryService(asList(new FileResolver()), idService, idConfigs);
+        final BinaryService binaryService = new DefaultBinaryService(idService, partitions, asList(new FileResolver()));
 
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
@@ -133,7 +127,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         config.getZookeeper().getTimeout()));
         environment.jersey().register(new AdminResource());
         environment.jersey()
-            .register(new LdpResource(resourceService, ioService, constraintService, binaryService, partitions,
+            .register(new LdpResource(resourceService, ioService, constraintService, binaryService,
+                        partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
+                                e -> e.getValue().getProperty("baseUrl"))),
                         config.getUnsupportedTypes()));
     }
 }

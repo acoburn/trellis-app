@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -67,5 +68,16 @@ class BinaryConfiguration {
      */
     public String getOrDefault(final String name, final String defaultValue) {
         return other.getOrDefault(name, defaultValue);
+    }
+
+    /**
+     * Get the configuration as a Properties object
+     * @return this configuration as Properties
+     */
+    public Properties asProperties() {
+        final Properties props = new Properties();
+        other.forEach(props::setProperty);
+        props.setProperty("prefix", getPrefix());
+        return props;
     }
 }
