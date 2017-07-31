@@ -57,6 +57,9 @@ import org.trellisldp.spi.ResourceService;
  */
 public class TrellisApplication extends Application<TrellisConfiguration> {
 
+    private static final String RESOURCE_PATH = "resourcePath";
+    private static final String BASE_URL = "baseUrl";
+
     /**
      * The main entry point
      * @param args the argument list
@@ -88,8 +91,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final Map<String, Properties> partitions = config.getPartitions().stream()
             .collect(toMap(PartitionConfiguration::getId, p -> {
                 final Properties props = p.getBinaries().asProperties();
-                props.setProperty("baseUrl", p.getBaseUrl());
-                props.setProperty("resourcePath", p.getResources().getPath());
+                props.setProperty(BASE_URL, p.getBaseUrl());
+                props.setProperty(RESOURCE_PATH, p.getResources().getPath());
                 return props;
             }));
 
@@ -104,11 +107,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final IdentifierService idService = new UUIDGenerator();
 
-        final Properties props = new Properties();
-        partitions.forEach((k, v) -> props.setProperty("trellis.storage." + k + ".resources",
-                    v.getProperty("resourcePath")));
-        final ResourceService resourceService = new FileResourceService(props, curator, producer,
-                notifications, idService.getSupplier(), config.getAsync());
+        final ResourceService resourceService = new FileResourceService(partitions.entrySet().stream()
+                    .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(RESOURCE_PATH))),
+                curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
 
@@ -129,7 +130,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey()
             .register(new LdpResource(resourceService, ioService, constraintService, binaryService,
                         partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
-                                e -> e.getValue().getProperty("baseUrl"))),
+                                e -> e.getValue().getProperty(BASE_URL))),
                         config.getUnsupportedTypes()));
     }
 }
