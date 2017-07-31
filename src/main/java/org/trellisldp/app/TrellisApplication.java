@@ -14,6 +14,7 @@
 package org.trellisldp.app;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
@@ -50,6 +51,7 @@ import org.trellisldp.spi.IOService;
 import org.trellisldp.spi.IdentifierService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
+import org.trellisldp.spi.RuntimeRepositoryException;
 
 
 /**
@@ -59,6 +61,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     private static final String RESOURCE_PATH = "resourcePath";
     private static final String BASE_URL = "baseUrl";
+    private static final String BINARY_PATH = "path";
+    private static final String FILE_PREFIX = "file:";
+    private static final String PREFIX = "prefix";
 
     /**
      * The main entry point
@@ -93,6 +98,14 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 final Properties props = p.getBinaries().asProperties();
                 props.setProperty(BASE_URL, p.getBaseUrl());
                 props.setProperty(RESOURCE_PATH, p.getResources().getPath());
+                if (props.getProperty(PREFIX).startsWith(FILE_PREFIX)) {
+                    if (isNull(props.getProperty(BINARY_PATH))) {
+                        throw new RuntimeRepositoryException("No path value defined for file-based binary storage");
+                    }
+                    if (!props.getProperty(PREFIX).startsWith(FILE_PREFIX + p.getId() + "/")) {
+                        throw new RuntimeRepositoryException("Prefix value does not include partition!");
+                    }
+                }
                 return props;
             }));
 
@@ -118,7 +131,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ConstraintService constraintService = new LdpConstraints();
 
         // TODO file resolver needs a method for accessing `path` values
-        final BinaryService binaryService = new DefaultBinaryService(idService, partitions, asList(new FileResolver()));
+        final BinaryService binaryService = new DefaultBinaryService(idService, partitions,
+                asList(new FileResolver(partitions.entrySet().stream()
+                        .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
+                        .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
 
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
