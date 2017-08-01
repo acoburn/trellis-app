@@ -130,7 +130,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final ConstraintService constraintService = new LdpConstraints();
 
-        // TODO file resolver needs a method for accessing `path` values
         final BinaryService binaryService = new DefaultBinaryService(idService, partitions,
                 asList(new FileResolver(partitions.entrySet().stream()
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
