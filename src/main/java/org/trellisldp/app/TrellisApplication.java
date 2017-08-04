@@ -39,6 +39,7 @@ import org.trellisldp.binary.FileResolver;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.LdpResource;
+import org.trellisldp.http.RootResource;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -86,6 +87,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     @Override
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws IOException {
+
+        // Static configurations
+        final Properties serverProperties = new Properties();
+        serverProperties.setProperty("title", "Trellis Repository");
 
         // Kafka producer configuration
         final Properties producerProps = config.getKafka().asProperties();
@@ -135,6 +140,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
                         .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
 
+        final Map<String, String> partitionUrls = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
+                                e -> e.getValue().getProperty(BASE_URL)));
+
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
                         config.getZookeeper().getTimeout()));
@@ -142,10 +150,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
             .register("kafka", new KafkaHealthCheck(config.getZookeeper().getEnsembleServers(),
                         config.getZookeeper().getTimeout()));
         environment.jersey().register(new AdminResource());
+        environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey()
             .register(new LdpResource(resourceService, ioService, constraintService, binaryService,
-                        partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
-                                e -> e.getValue().getProperty(BASE_URL))),
-                        config.getUnsupportedTypes()));
+                        partitionUrls, config.getUnsupportedTypes()));
     }
 }
