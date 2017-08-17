@@ -16,6 +16,7 @@ package org.trellisldp.app;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 
@@ -32,19 +33,27 @@ import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
+import org.trellisldp.agent.JsonAgent;
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
 import org.trellisldp.binary.FileResolver;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AdminResource;
+import org.trellisldp.http.AgentAuthorizationFilter;
+import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.LdpResource;
+import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.RootResource;
+import org.trellisldp.http.TrailingSlashFilter;
+import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.rosid.file.FileResourceService;
+import org.trellisldp.spi.AccessControlService;
+import org.trellisldp.spi.AgentService;
 import org.trellisldp.spi.BinaryService;
 import org.trellisldp.spi.ConstraintService;
 import org.trellisldp.spi.EventService;
@@ -53,6 +62,7 @@ import org.trellisldp.spi.IdentifierService;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.ResourceService;
 import org.trellisldp.spi.RuntimeRepositoryException;
+import org.trellisldp.webac.WebACService;
 
 
 /**
@@ -65,6 +75,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     private static final String BINARY_PATH = "path";
     private static final String FILE_PREFIX = "file:";
     private static final String PREFIX = "prefix";
+
+    // TODO make this configurable
+    private static final Integer CACHE_MAX_AGE = 86400;
 
     /**
      * The main entry point
@@ -143,16 +156,30 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final Map<String, String> partitionUrls = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
                                 e -> e.getValue().getProperty(BASE_URL)));
 
+        // TODO -- make this configurable
+        final AgentService agentService = new JsonAgent("path/to/config", "user:");
+        final AccessControlService accessControlService = new WebACService(resourceService, agentService);
+
+        // Health checks
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
                         config.getZookeeper().getTimeout()));
         environment.healthChecks()
             .register("kafka", new KafkaHealthCheck(config.getZookeeper().getEnsembleServers(),
                         config.getZookeeper().getTimeout()));
+
+        // Resource matchers
         environment.jersey().register(new AdminResource());
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
-        environment.jersey()
-            .register(new LdpResource(resourceService, ioService, constraintService, binaryService,
-                        partitionUrls, config.getUnsupportedTypes()));
+        environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
+                    partitionUrls, config.getUnsupportedTypes()));
+        environment.jersey().register(new MultipartUploader(resourceService, binaryService));
+
+        // Filters
+        environment.jersey().register(new TrailingSlashFilter());
+        environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
+        environment.jersey().register(new WebAcFilter(partitions.entrySet().stream().map(Map.Entry::getKey)
+                    .collect(toSet()), asList("Authorization"), accessControlService));
+        environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
     }
 }

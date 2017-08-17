@@ -29,16 +29,18 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
+    trellisAgentVersion = '0.1.0-SNAPSHOT'
     trellisBinaryVersion = '0.1.0-SNAPSHOT'
     trellisConstraintVersion = '0.1.0-SNAPSHOT'
     trellisSpiVersion = '0.1.0-SNAPSHOT'
-    trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     trellisKafkaVersion = '0.1.0-SNAPSHOT'
+    trellisHttpVersion = '0.1.0-SNAPSHOT'
     trellisIdVersion = '0.1.0-SNAPSHOT'
     trellisIoJenaVersion = '0.1.0-SNAPSHOT'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisNamespacesVersion = '0.1.0-SNAPSHOT'
-    trellisHttpVersion = '0.1.0-SNAPSHOT'
+    trellisWebacVersion = '0.1.0-SNAPSHOT'
+    trellisVocabularyVersion = '0.1.0-SNAPSHOT'
 
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
@@ -67,6 +69,8 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'org.trellisldp', name: 'trellis-http', version: trellisHttpVersion
     compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
+    compile group: 'org.trellisldp', name: 'trellis-agent', version: trellisAgentVersion
+    compile group: 'org.trellisldp', name: 'trellis-webac', version: trellisWebacVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
