@@ -39,7 +39,6 @@ import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
 import org.trellisldp.binary.FileResolver;
 import org.trellisldp.constraint.LdpConstraints;
-import org.trellisldp.http.AdminResource;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.LdpResource;
@@ -47,6 +46,7 @@ import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.RootResource;
 import org.trellisldp.http.TrailingSlashFilter;
 import org.trellisldp.http.WebAcFilter;
+import org.trellisldp.http.WebAcHeaderFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -169,7 +169,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         config.getZookeeper().getTimeout()));
 
         // Resource matchers
-        environment.jersey().register(new AdminResource());
+        //environment.jersey().register(new AdminResource());
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
                     partitionUrls, config.getUnsupportedTypes()));
@@ -181,5 +181,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey().register(new WebAcFilter(partitions.entrySet().stream().map(Map.Entry::getKey)
                     .collect(toSet()), asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
+        environment.jersey().register(new WebAcHeaderFilter());
     }
 }
