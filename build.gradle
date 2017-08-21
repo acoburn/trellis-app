@@ -44,6 +44,7 @@ ext {
 
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
+    cxfVersion = '3.1.12'
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.25'
     dropwizardVersion = '1.1.3'
@@ -74,6 +75,7 @@ dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    compile group: 'org.apache.cxf', name: 'cxf-rt-rs-security-cors', version: cxfVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
 

@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
@@ -160,6 +161,11 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final AgentService agentService = new JsonAgent("path/to/config", "user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
 
+        // CORS configuration
+        final CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
+        corsFilter.setExposeHeaders(asList("Link"));
+        corsFilter.setAllowOrigins(asList("*"));
+
         // Health checks
         environment.healthChecks()
             .register("zookeeper", new ZookeeperHealthCheck(config.getZookeeper().getEnsembleServers(),
@@ -182,5 +188,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                     .collect(toSet()), asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         environment.jersey().register(new WebAcHeaderFilter());
+        environment.jersey().register(corsFilter);
     }
 }
