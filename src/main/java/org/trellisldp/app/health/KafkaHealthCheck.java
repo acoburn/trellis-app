@@ -28,11 +28,7 @@ import org.apache.zookeeper.KeeperException;
 /**
  * @author acoburn
  */
-public class KafkaHealthCheck extends HealthCheck {
-
-    private static final int retries = 10;
-    private final int timeout;
-    private final String connectString;
+public class KafkaHealthCheck extends ZookeeperHealthCheck {
 
     /**
      * Create an object that checks the health of a zk ensemble
@@ -40,14 +36,12 @@ public class KafkaHealthCheck extends HealthCheck {
      * @param timeout the timeout
      */
     public KafkaHealthCheck(final String connectString, final int timeout) {
-        super();
-        this.connectString = connectString;
-        this.timeout = timeout;
+        super(connectString, timeout);
     }
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(retries, timeout))) {
+        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(RETRIES, timeout))) {
             zk.start();
             zk.blockUntilConnected();
             if (!zk.getZookeeperClient().isConnected()) {

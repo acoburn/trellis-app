@@ -30,9 +30,10 @@ import org.apache.curator.retry.RetryNTimes;
  */
 public class ZookeeperHealthCheck extends HealthCheck {
 
-    private static final int retries = 10;
-    private final int timeout;
-    private final String connectString;
+    protected static final int RETRIES = 10;
+
+    protected final int timeout;
+    protected final String connectString;
 
     /**
      * Create an object that checks the health of a zk ensemble
@@ -47,7 +48,7 @@ public class ZookeeperHealthCheck extends HealthCheck {
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(retries, timeout))) {
+        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(RETRIES, timeout))) {
             zk.start();
             zk.blockUntilConnected();
             if (!zk.getZookeeperClient().isConnected()) {
