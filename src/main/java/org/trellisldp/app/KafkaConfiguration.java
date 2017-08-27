@@ -36,13 +36,16 @@ class KafkaConfiguration {
     @NotEmpty
     private String bootstrapServers;
 
-    private Map<String, String> other = new HashMap<String, String>() { {
-        put("acks", DEFAULT_ACKS);
-        put("batch.size", DEFAULT_BATCH_SIZE.toString());
-        put("retries", DEFAULT_RETRIES.toString());
-        put("linger.ms", DEFAULT_LINGER_MS.toString());
-        put("buffer.memory", DEFAULT_BUFFER_MEMORY.toString());
-    }};
+    // TODO - JDK 9
+    private final Map<String, String> other = new HashMap<>();
+
+    public KafkaConfiguration() {
+        other.put("acks", DEFAULT_ACKS);
+        other.put("batch.size", DEFAULT_BATCH_SIZE.toString());
+        other.put("retries", DEFAULT_RETRIES.toString());
+        other.put("linger.ms", DEFAULT_LINGER_MS.toString());
+        other.put("buffer.memory", DEFAULT_BUFFER_MEMORY.toString());
+    }
 
     /**
      * Set the kafka bootstrap server locations
@@ -78,7 +81,7 @@ class KafkaConfiguration {
      */
     public Properties asProperties() {
         final Properties props = new Properties();
-        other.forEach((k, v) -> props.setProperty(k, v));
+        other.forEach(props::setProperty);
         props.setProperty("bootstrap.servers", bootstrapServers);
         return props;
     }

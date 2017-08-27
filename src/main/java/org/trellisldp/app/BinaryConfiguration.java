@@ -30,7 +30,7 @@ class BinaryConfiguration {
     @NotEmpty
     private String prefix;
 
-    private Map<String, String> other = new HashMap<String, String>();
+    private Map<String, String> other = new HashMap<>();
 
     /**
      * Get the prefix value for new binary identifiers

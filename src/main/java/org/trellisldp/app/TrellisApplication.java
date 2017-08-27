@@ -96,6 +96,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TrellisConfiguration> bootstrap) {
+        // Not currently used
     }
 
     @Override
@@ -175,7 +176,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         config.getZookeeper().getTimeout()));
 
         // Resource matchers
-        //environment.jersey().register(new AdminResource());
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
                     partitionUrls, config.getUnsupportedTypes()));
