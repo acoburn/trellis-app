@@ -16,7 +16,6 @@ package org.trellisldp.app;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 
@@ -184,8 +183,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         // Filters
         environment.jersey().register(new TrailingSlashFilter());
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new WebAcFilter(partitions.entrySet().stream().map(Map.Entry::getKey)
-                    .collect(toSet()), asList("Authorization"), accessControlService));
+        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         environment.jersey().register(new WebAcHeaderFilter());
         environment.jersey().register(corsFilter);
