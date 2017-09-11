@@ -157,7 +157,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                                 e -> e.getValue().getProperty(BASE_URL)));
 
         // TODO -- make this configurable
-        final AgentService agentService = new JsonAgent("/Users/acoburn/trellisData/agents.json", "user:");
+        final AgentService agentService = new JsonAgent("user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
 
         final WebAcFilter webacFilter = new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService);
