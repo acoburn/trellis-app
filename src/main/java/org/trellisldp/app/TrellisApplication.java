@@ -180,7 +180,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         // Resource matchers
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
-                    partitionUrls, config.getUnsupportedTypes()));
+                    partitionUrls));
         environment.jersey().register(new MultipartUploader(resourceService, binaryService));
 
         // Filters

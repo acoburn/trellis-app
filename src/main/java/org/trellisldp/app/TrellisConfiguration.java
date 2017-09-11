@@ -13,8 +13,6 @@
  */
 package org.trellisldp.app;
 
-import static java.util.Arrays.asList;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
@@ -50,8 +48,6 @@ class TrellisConfiguration extends Configuration {
     private String topic = "trellis";
 
     private Boolean async = false;
-
-    private List<String> unsupportedTypes = asList("message/external-body");
 
     /**
      * Set async mode
@@ -195,23 +191,5 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getTopic() {
         return topic;
-    }
-
-    /**
-     * Get any unsupported types
-     * @return unsupported mimeTypes
-     */
-    @JsonProperty
-    public List<String> getUnsupportedTypes() {
-        return unsupportedTypes;
-    }
-
-    /**
-     * Set any unsupported types
-     * @param unsupportedTypes any unsupported mimetypes
-     */
-    @JsonProperty
-    public void setUnsupportedTypes(final List<String> unsupportedTypes) {
-        this.unsupportedTypes = unsupportedTypes;
     }
 }
