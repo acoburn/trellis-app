@@ -11,12 +11,10 @@ partitions:
           path: /Users/acoburn/trellisData/binaries
       resources:
           path: /Users/acoburn/trellisData/resources
-      baseUrl: http://localhost:8080/repository
+      baseUrl: http://localhost:8080/
 
 namespaceFile: /Users/acoburn/trellisData/namespaces.json
 zookeeper:
     ensembleServers: localhost:2181
 kafka:
     bootstrapServers: localhost:9092
-unsupportedTypes:
-    - "message/external-body"
