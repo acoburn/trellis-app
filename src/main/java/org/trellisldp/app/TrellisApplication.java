@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
-import org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
@@ -161,11 +160,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final AgentService agentService = new JsonAgent("/Users/acoburn/trellisData/agents.json", "user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
 
-        // CORS configuration
-        final CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
-        corsFilter.setExposeHeaders(asList("Link"));
-        corsFilter.setAllowOrigins(asList("*"));
-
         final WebAcFilter webacFilter = new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService);
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService, "admin");
 
@@ -189,6 +183,5 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         //environment.jersey().register(webacFilter);
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         environment.jersey().register(new WebAcHeaderFilter());
-        //environment.jersey().register(corsFilter);
     }
 }
