@@ -14,6 +14,7 @@
 package org.trellisldp.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
@@ -21,10 +22,10 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 class PartitionConfiguration {
 
-    @NotEmpty
+    @NotNull
     private ResourceConfiguration resources;
 
-    @NotEmpty
+    @NotNull
     private BinaryConfiguration binaries;
 
     @NotEmpty

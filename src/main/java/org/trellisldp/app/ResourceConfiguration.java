@@ -14,15 +14,15 @@
 package org.trellisldp.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author acoburn
  */
 class ResourceConfiguration {
 
-    @NotEmpty
-    private String path = "";
+    @NotNull
+    private String path;
 
     /**
      * Get the underlying path for file-based resources

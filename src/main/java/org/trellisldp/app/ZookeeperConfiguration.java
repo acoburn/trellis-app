@@ -15,7 +15,7 @@ package org.trellisldp.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author acoburn
@@ -27,19 +27,15 @@ class ZookeeperConfiguration {
     private static final Integer DEFAULT_RETRY_MAX = 10;
     private static final Integer DEFAULT_RETRY_MAX_MS = 30000;
 
-    @NotEmpty
+    @NotNull
     private String ensemble;
 
-    @NotEmpty
     private Integer timeout = DEFAULT_TIMEOUT;
 
-    @NotEmpty
     private Integer retryMs = DEFAULT_RETRY_MS;
 
-    @NotEmpty
     private Integer retryMax = DEFAULT_RETRY_MAX;
 
-    @NotEmpty
     private Integer retryMaxMs = DEFAULT_RETRY_MAX_MS;
 
     /**

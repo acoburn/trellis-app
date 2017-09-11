@@ -158,13 +158,16 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                                 e -> e.getValue().getProperty(BASE_URL)));
 
         // TODO -- make this configurable
-        final AgentService agentService = new JsonAgent("path/to/config", "user:");
+        final AgentService agentService = new JsonAgent("/Users/acoburn/trellisData/agents.json", "user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
 
         // CORS configuration
         final CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
         corsFilter.setExposeHeaders(asList("Link"));
         corsFilter.setAllowOrigins(asList("*"));
+
+        final WebAcFilter webacFilter = new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService);
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService, "admin");
 
         // Health checks
         environment.healthChecks()
@@ -182,10 +185,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new TrailingSlashFilter());
-        environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
+        //environment.jersey().register(agentFilter);
+        //environment.jersey().register(webacFilter);
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         environment.jersey().register(new WebAcHeaderFilter());
-        environment.jersey().register(corsFilter);
+        //environment.jersey().register(corsFilter);
     }
 }

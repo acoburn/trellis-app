@@ -1,16 +1,22 @@
 logging:
   level: WARN
   loggers:
-    org.trellisldp: INFO
+    org.trellisldp: DEBUG
     io.dropwizard: INFO
 
 partitions:
     - id: repository
-      ldpnr: /Users/acoburn/trellisData/datastreams
-      ldprs: /Users/acoburn/trellisData/objects
-      url: http://localhost:8080/repository
+      binaries:
+          prefix: "file:repository/"
+          path: /Users/acoburn/trellisData/binaries
+      resources:
+          path: /Users/acoburn/trellisData/resources
+      baseUrl: http://localhost:8080/repository
 
 namespaceFile: /Users/acoburn/trellisData/namespaces.json
-ensemble: localhost:2181
-bootstrapServers: localhost:9092
-unsupportedTypes: [message/external-body]
+zookeeper:
+    ensembleServers: localhost:2181
+kafka:
+    bootstrapServers: localhost:9092
+unsupportedTypes:
+    - "message/external-body"

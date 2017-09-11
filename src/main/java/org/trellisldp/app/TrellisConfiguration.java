@@ -21,35 +21,34 @@ import io.dropwizard.Configuration;
 
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author acoburn
  */
 class TrellisConfiguration extends Configuration {
 
-    @NotEmpty
+    @NotNull
     private String namespaceFile;
 
-    @NotEmpty
+    @NotNull
     private String defaultName = "Trellis";
 
-    @NotEmpty
-    private AssetConfiguration assets;
+    @NotNull
+    private AssetConfiguration assets = new AssetConfiguration();
 
-    @NotEmpty
+    @NotNull
     private List<PartitionConfiguration> partitions;
 
-    @NotEmpty
+    @NotNull
     private KafkaConfiguration kafka;
 
-    @NotEmpty
+    @NotNull
     private ZookeeperConfiguration zookeeper;
 
-    @NotEmpty
+    @NotNull
     private String topic = "trellis";
 
-    @NotEmpty
     private Boolean async = false;
 
     private List<String> unsupportedTypes = asList("message/external-body");
