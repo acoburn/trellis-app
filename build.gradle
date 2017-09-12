@@ -48,6 +48,7 @@ ext {
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.25'
     dropwizardVersion = '1.2.0-rc5'
+    activationApiVersion = '1.2.0'
 
     /* Testing */
     junitVersion = '4.12'
@@ -75,6 +76,7 @@ dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
 
