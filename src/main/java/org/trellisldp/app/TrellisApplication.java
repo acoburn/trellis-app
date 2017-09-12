@@ -179,8 +179,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new TrailingSlashFilter());
-        //environment.jersey().register(agentFilter);
-        //environment.jersey().register(webacFilter);
+        environment.jersey().register(agentFilter);
+        environment.jersey().register(webacFilter);
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         environment.jersey().register(new WebAcHeaderFilter());
     }
