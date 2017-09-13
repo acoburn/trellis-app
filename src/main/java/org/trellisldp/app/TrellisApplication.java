@@ -42,10 +42,10 @@ import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.http.MultipartUploader;
+import org.trellisldp.http.ParamValidationFilter;
 import org.trellisldp.http.RootResource;
 import org.trellisldp.http.TrailingSlashFilter;
 import org.trellisldp.http.WebAcFilter;
-import org.trellisldp.http.WebAcHeaderFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -156,12 +156,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final Map<String, String> partitionUrls = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
                                 e -> e.getValue().getProperty(BASE_URL)));
 
-        // TODO -- make this configurable
+        // TODO -- make this prefix configurable
         final AgentService agentService = new JsonAgent("user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
-
-        final WebAcFilter webacFilter = new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService);
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService, "admin");
 
         // Health checks
         environment.healthChecks()
@@ -179,9 +176,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new TrailingSlashFilter());
-        environment.jersey().register(agentFilter);
-        environment.jersey().register(webacFilter);
+        environment.jersey().register(new ParamValidationFilter());
+        environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
+        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
-        environment.jersey().register(new WebAcHeaderFilter());
     }
 }
