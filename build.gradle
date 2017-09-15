@@ -31,16 +31,16 @@ ext {
 
     /* Dependencies */
     trellisAgentVersion = '0.1.0-SNAPSHOT'
-    trellisBinaryVersion = '0.1.0-SNAPSHOT'
-    trellisConstraintVersion = '0.1.0-SNAPSHOT'
+    trellisBinaryVersion = '0.1.0'
+    trellisConstraintVersion = '0.1.0'
     trellisSpiVersion = '0.1.0'
     trellisKafkaVersion = '0.1.0'
     trellisHttpVersion = '0.1.0-SNAPSHOT'
-    trellisIdVersion = '0.1.0-SNAPSHOT'
+    trellisIdVersion = '0.1.0'
     trellisIoJenaVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisNamespacesVersion = '0.1.0-SNAPSHOT'
-    trellisWebacVersion = '0.1.0-SNAPSHOT'
+    trellisWebacVersion = '0.1.0'
     trellisVocabularyVersion = '0.1.0'
 
     commonsRdfVersion = '0.3.0-incubating'
