@@ -40,11 +40,10 @@ import org.trellisldp.binary.FileResolver;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
+import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.http.MultipartUploader;
-import org.trellisldp.http.ParamValidationFilter;
 import org.trellisldp.http.RootResource;
-import org.trellisldp.http.TrailingSlashFilter;
 import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
@@ -172,13 +171,17 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
                     partitionUrls));
-        environment.jersey().register(new MultipartUploader(resourceService, binaryService));
+        environment.jersey().register(new MultipartUploader(resourceService, binaryService, partitionUrls));
 
         // Filters
-        environment.jersey().register(new TrailingSlashFilter());
-        environment.jersey().register(new ParamValidationFilter());
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
         environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
+        environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
+                    asList("PUT", "DELETE", "PATCH"),
+                    asList("Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug",
+                        "Digest"),
+                    asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied",
+                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges"), true, 180));
     }
 }
