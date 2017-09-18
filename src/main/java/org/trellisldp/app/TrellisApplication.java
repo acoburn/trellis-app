@@ -177,11 +177,15 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
         environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
+        // TODO - make the CORS filter configurable
         environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
-                    asList("PUT", "DELETE", "PATCH"),
+                    // Allowed methods
+                    asList("PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST"),
+                    // Allowed headers
                     asList("Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug",
                         "Digest"),
-                    asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied",
-                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges"), true, 180));
+                    // Exposed headers
+                    asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location",
+                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary", ), true, 180));
     }
 }
