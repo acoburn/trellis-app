@@ -157,7 +157,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // TODO -- make this prefix configurable
         final AgentService agentService = new PrefixingAgent("user:");
-        final AccessControlService accessControlService = new WebACService(resourceService, agentService);
+        final AccessControlService accessControlService = new WebACService(resourceService);
 
         // Health checks
         environment.healthChecks()

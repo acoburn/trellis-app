@@ -40,7 +40,7 @@ ext {
     trellisIoJenaVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisNamespacesVersion = '0.1.0'
-    trellisWebacVersion = '0.1.0'
+    trellisWebacVersion = '0.1.1'
     trellisVocabularyVersion = '0.1.0'
 
     commonsRdfVersion = '0.3.0-incubating'
