@@ -30,7 +30,7 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
-    trellisAgentVersion = '0.1.0-SNAPSHOT'
+    trellisAgentVersion = '0.1.0'
     trellisBinaryVersion = '0.1.0'
     trellisConstraintVersion = '0.1.0'
     trellisSpiVersion = '0.1.0'
