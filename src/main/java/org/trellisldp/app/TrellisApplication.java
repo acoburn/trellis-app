@@ -32,7 +32,7 @@ import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
-import org.trellisldp.agent.JsonAgent;
+import org.trellisldp.agent.PrefixingAgent;
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
@@ -44,7 +44,7 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.RootResource;
-import org.trellisldp.http.WebAcFilter;
+import org.trellisldp.http.WebAclFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -156,7 +156,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                                 e -> e.getValue().getProperty(BASE_URL)));
 
         // TODO -- make this prefix configurable
-        final AgentService agentService = new JsonAgent("user:");
+        final AgentService agentService = new PrefixingAgent("user:");
         final AccessControlService accessControlService = new WebACService(resourceService, agentService);
 
         // Health checks
@@ -175,7 +175,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
+        environment.jersey().register(new WebAclFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         // TODO - make the CORS filter configurable
         environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
@@ -186,6 +186,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         "Digest"),
                     // Exposed headers
                     asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location",
-                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary", ), true, 180));
+                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary"), true, 180));
     }
 }
