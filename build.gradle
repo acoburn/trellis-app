@@ -39,7 +39,6 @@ ext {
     trellisIdVersion = '0.1.0'
     trellisIoJenaVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
-    trellisNamespacesVersion = '0.1.0'
     trellisWebacVersion = '0.1.1'
     trellisVocabularyVersion = '0.1.0'
 
@@ -65,7 +64,6 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-constraint-rules', version: trellisConstraintVersion
     compile group: 'org.trellisldp', name: 'trellis-io-jena', version: trellisIoJenaVersion
     compile group: 'org.trellisldp', name: 'trellis-id', version: trellisIdVersion
-    compile group: 'org.trellisldp', name: 'trellis-namespaces', version: trellisNamespacesVersion
     compile group: 'org.trellisldp', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'org.trellisldp', name: 'trellis-kafka', version: trellisKafkaVersion
     compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion

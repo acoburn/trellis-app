@@ -48,7 +48,7 @@ import org.trellisldp.http.WebAclFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
-import org.trellisldp.namespaces.NamespacesJsonContext;
+import org.trellisldp.rosid.common.Namespaces;
 import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.spi.AccessControlService;
 import org.trellisldp.spi.AgentService;
@@ -141,7 +141,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                     .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(RESOURCE_PATH))),
                 curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
-        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaceFile());
+        final NamespaceService namespaceService = new Namespaces(curator, config.getNamespaceFile());
 
         final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
 
