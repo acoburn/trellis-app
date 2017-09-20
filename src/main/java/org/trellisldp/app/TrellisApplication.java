@@ -18,6 +18,7 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
+import static org.trellisldp.rosid.common.RosidConstants.ZNODE_NAMESPACES;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -44,7 +46,7 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.RootResource;
-import org.trellisldp.http.WebAclFilter;
+import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -141,7 +143,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                     .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(RESOURCE_PATH))),
                 curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
-        final NamespaceService namespaceService = new Namespaces(curator, config.getNamespaceFile());
+        final NodeCache cache = new NodeCache(curator, ZNODE_NAMESPACES);
+        final NamespaceService namespaceService = new Namespaces(cache, config.getNamespaceFile());
 
         final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
 
@@ -175,7 +178,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new WebAclFilter(partitionUrls, asList("Authorization"), accessControlService));
+        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
         // TODO - make the CORS filter configurable
         environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
