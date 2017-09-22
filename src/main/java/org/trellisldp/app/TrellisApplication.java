@@ -128,6 +128,14 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 return props;
             }));
 
+        // Partition data configuration
+        final Map<String, String> partitionData = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
+                                e -> e.getValue().getProperty(RESOURCE_PATH)));
+
+        // Partition BaseURL configuration
+        final Map<String, String> partitionUrls = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
+                                e -> e.getValue().getProperty(BASE_URL)));
+
         final CuratorFramework curator = newClient(config.getZookeeper().getEnsembleServers(),
                 new BoundedExponentialBackoffRetry(config.getZookeeper().getRetryMs(),
                     config.getZookeeper().getRetryMaxMs(), config.getZookeeper().getRetryMax()));
@@ -139,8 +147,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final IdentifierService idService = new UUIDGenerator();
 
-        final ResourceService resourceService = new FileResourceService(partitions.entrySet().stream()
-                    .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(RESOURCE_PATH))),
+        final ResourceService resourceService = new FileResourceService(partitionData, partitionUrls,
                 curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
         final NodeCache cache = new NodeCache(curator, ZNODE_NAMESPACES);
@@ -154,9 +161,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 asList(new FileResolver(partitions.entrySet().stream()
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
                         .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
-
-        final Map<String, String> partitionUrls = partitions.entrySet().stream().collect(toMap(Map.Entry::getKey,
-                                e -> e.getValue().getProperty(BASE_URL)));
 
         // TODO -- make this prefix configurable
         final AgentService agentService = new PrefixingAgent("user:");
