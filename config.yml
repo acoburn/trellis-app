@@ -9,6 +9,7 @@ partitions:
       binaries:
           prefix: "file:repository/"
           path: /Users/acoburn/trellisData/binaries
+          levels: 4
       resources:
           path: /Users/acoburn/trellisData/resources
       baseUrl: http://localhost:8080/
