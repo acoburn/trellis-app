@@ -182,17 +182,24 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"), accessControlService));
         environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
-        // TODO - make the CORS filter configurable
-        environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
-                    // Allowed methods
-                    asList("PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST"),
-                    // Allowed headers
-                    asList("Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug",
-                        "Digest"),
-                    // Exposed headers
-                    asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location",
-                        "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary"), true, 180));
+
+        if (config.getEnableWebAc()) {
+            environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"),
+                        accessControlService));
+        }
+
+        if (config.getEnableCORS()) {
+            // TODO - make the CORS filter configurable
+            environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
+                        // Allowed methods
+                        asList("PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST"),
+                        // Allowed headers
+                        asList("Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug",
+                            "Digest"),
+                        // Exposed headers
+                        asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location",
+                            "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary"), true, 180));
+        }
     }
 }

@@ -15,7 +15,11 @@ partitions:
       baseUrl: http://localhost:8080/
 
 namespaceFile: /Users/acoburn/trellisData/namespaces.json
+
 zookeeper:
     ensembleServers: localhost:2181
+
 kafka:
     bootstrapServers: localhost:9092
+
+enableWebAc: false

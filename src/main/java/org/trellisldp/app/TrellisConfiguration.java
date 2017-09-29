@@ -49,6 +49,10 @@ class TrellisConfiguration extends Configuration {
 
     private Boolean async = false;
 
+    private Boolean enableCORS = true;
+
+    private Boolean enableWebAc = true;
+
     /**
      * Set async mode
      * @param async true if async mode is enabled; false otherwise
@@ -191,5 +195,25 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getTopic() {
         return topic;
+    }
+
+    @JsonProperty
+    public void setEnableCORS(final Boolean enableCORS) {
+        this.enableCORS = enableCORS;
+    }
+
+    @JsonProperty
+    public Boolean getEnableCORS() {
+        return enableCORS;
+    }
+
+    @JsonProperty
+    public void setEnableWebAc(final Boolean enableWebAc) {
+        this.enableWebAc = enableWebAc;
+    }
+
+    @JsonProperty
+    public Boolean getEnableWebAc() {
+        return enableWebAc;
     }
 }
