@@ -30,16 +30,18 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
-    trellisAgentVersion = '0.1.0'
-    trellisBinaryVersion = '0.1.0'
-    trellisConstraintVersion = '0.1.0'
-    trellisSpiVersion = '0.1.3'
-    trellisKafkaVersion = '0.1.0'
-    trellisHttpVersion = '0.1.0'
-    trellisIdVersion = '0.1.0'
-    trellisIoJenaVersion = '0.1.1'
+    trellisAgentVersion = '0.2.0'
+    trellisBinaryVersion = '0.2.0'
+    trellisConstraintVersion = '0.2.0'
+    trellisApiVersion = '0.2.0'
+    trellisKafkaVersion = '0.2.0'
+    trellisHttpVersion = '0.2.0'
+    trellisIdVersion = '0.2.0'
+    trellisIoJenaVersion = '0.2.0'
+    trellisAuditVersion = '0.1.0'
+    trellisEventVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
-    trellisWebacVersion = '0.1.1'
+    trellisWebacVersion = '0.2.0'
     trellisVocabularyVersion = '0.1.0'
 
     commonsRdfVersion = '0.3.0-incubating'
@@ -66,10 +68,12 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-id', version: trellisIdVersion
     compile group: 'org.trellisldp', name: 'trellis-rosid-file', version: trellisRosidFileVersion
     compile group: 'org.trellisldp', name: 'trellis-kafka', version: trellisKafkaVersion
-    compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'org.trellisldp', name: 'trellis-api', version: trellisApiVersion
     compile group: 'org.trellisldp', name: 'trellis-http', version: trellisHttpVersion
     compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'org.trellisldp', name: 'trellis-agent', version: trellisAgentVersion
+    compile group: 'org.trellisldp', name: 'trellis-audit', version: trellisAuditVersion
+    compile group: 'org.trellisldp', name: 'trellis-event-serialization', version: trellisEventVersion
     compile group: 'org.trellisldp', name: 'trellis-webac', version: trellisWebacVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion

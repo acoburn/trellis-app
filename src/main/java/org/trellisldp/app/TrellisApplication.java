@@ -52,16 +52,16 @@ import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.rosid.common.Namespaces;
 import org.trellisldp.rosid.file.FileResourceService;
-import org.trellisldp.spi.AccessControlService;
-import org.trellisldp.spi.AgentService;
-import org.trellisldp.spi.BinaryService;
-import org.trellisldp.spi.ConstraintService;
-import org.trellisldp.spi.EventService;
-import org.trellisldp.spi.IOService;
-import org.trellisldp.spi.IdentifierService;
-import org.trellisldp.spi.NamespaceService;
-import org.trellisldp.spi.ResourceService;
-import org.trellisldp.spi.RuntimeRepositoryException;
+import org.trellisldp.api.AccessControlService;
+import org.trellisldp.api.AgentService;
+import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.ConstraintService;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.IOService;
+import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeRepositoryException;
 import org.trellisldp.webac.WebACService;
 
 
