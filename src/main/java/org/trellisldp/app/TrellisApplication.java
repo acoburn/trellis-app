@@ -39,7 +39,6 @@ import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
 import org.trellisldp.binary.FileResolver;
-import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
@@ -55,7 +54,6 @@ import org.trellisldp.rosid.file.FileResourceService;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
@@ -155,8 +153,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
 
-        final ConstraintService constraintService = new LdpConstraints();
-
         final BinaryService binaryService = new DefaultBinaryService(idService, partitions,
                 asList(new FileResolver(partitions.entrySet().stream()
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
@@ -176,8 +172,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Resource matchers
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
-        environment.jersey().register(new LdpResource(resourceService, ioService, constraintService, binaryService,
-                    partitionUrls));
+        environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, partitionUrls));
         environment.jersey().register(new MultipartUploader(resourceService, binaryService, partitionUrls));
 
         // Filters
