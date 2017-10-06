@@ -30,19 +30,20 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
+    trellisVocabularyVersion = '0.1.0'
+    trellisApiVersion = '0.3.0'
+
     trellisAgentVersion = '0.2.0'
     trellisBinaryVersion = '0.2.0'
-    trellisConstraintVersion = '0.2.0'
-    trellisApiVersion = '0.2.0'
+    trellisConstraintVersion = '0.2.2'
     trellisKafkaVersion = '0.2.0'
-    trellisHttpVersion = '0.2.0'
+    trellisHttpVersion = '0.3.0'
     trellisIdVersion = '0.2.0'
     trellisIoJenaVersion = '0.2.0'
     trellisAuditVersion = '0.1.0'
     trellisEventVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.0-SNAPSHOT'
     trellisWebacVersion = '0.2.0'
-    trellisVocabularyVersion = '0.1.0'
 
     commonsRdfVersion = '0.3.0-incubating'
     commonsCodecVersion = '1.10'
