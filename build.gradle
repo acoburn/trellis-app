@@ -48,7 +48,7 @@ ext {
     commonsCodecVersion = '1.10'
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.25'
-    dropwizardVersion = '1.2.0-rc6'
+    dropwizardVersion = '1.2.0'
     activationApiVersion = '1.2.0'
 
     /* Testing */
