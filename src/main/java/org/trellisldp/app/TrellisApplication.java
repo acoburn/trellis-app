@@ -74,9 +74,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     private static final String FILE_PREFIX = "file:";
     private static final String PREFIX = "prefix";
 
-    // TODO make this configurable
-    private static final Integer CACHE_MAX_AGE = 86400;
-
     /**
      * The main entry point
      * @param args the argument list
@@ -158,7 +155,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
                         .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
 
-        // TODO -- make this prefix configurable
         final AgentService agentService = new PrefixingAgent(config.getUserPrefix());
         final AccessControlService accessControlService = new WebACService(resourceService);
 
@@ -177,7 +173,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
-        environment.jersey().register(new CacheControlFilter(CACHE_MAX_AGE));
+        environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
 
         if (config.getEnableWebAc()) {
             environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"),

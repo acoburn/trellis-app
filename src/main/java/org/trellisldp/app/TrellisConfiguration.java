@@ -56,6 +56,8 @@ class TrellisConfiguration extends Configuration {
 
     private Boolean enableWebAc = true;
 
+    private Integer cacheMaxAge = 86400;
+
     /**
      * Set async mode
      * @param async true if async mode is enabled; false otherwise
@@ -228,5 +230,15 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getUserPrefix() {
         return userPrefix;
+    }
+
+    @JsonProperty
+    public void setCacheMaxAge(final Integer cacheMaxAge) {
+        this.cacheMaxAge = cacheMaxAge;
+    }
+
+    @JsonProperty
+    public Integer getCacheMaxAge() {
+        return cacheMaxAge;
     }
 }
