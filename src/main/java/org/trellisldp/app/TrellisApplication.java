@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -148,8 +148,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ResourceService resourceService = new FileResourceService(partitionData, partitionUrls,
                 curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
-        final NodeCache cache = new NodeCache(curator, ZNODE_NAMESPACES);
-        final NamespaceService namespaceService = new Namespaces(cache, config.getNamespaceFile());
+        final TreeCache cache = new TreeCache(curator, ZNODE_NAMESPACES);
+        final NamespaceService namespaceService = new Namespaces(curator, cache, config.getNamespaceFile());
 
         final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
 
