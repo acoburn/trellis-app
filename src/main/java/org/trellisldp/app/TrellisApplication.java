@@ -102,7 +102,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Static configurations
         final Properties serverProperties = new Properties();
-        serverProperties.setProperty("title", "Trellis Repository");
+        serverProperties.setProperty("title", "Trellis LDP");
 
         // Kafka producer configuration
         final Properties producerProps = config.getKafka().asProperties();
@@ -159,7 +159,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
 
         // TODO -- make this prefix configurable
-        final AgentService agentService = new PrefixingAgent("user:");
+        final AgentService agentService = new PrefixingAgent(config.getUserPrefix());
         final AccessControlService accessControlService = new WebACService(resourceService);
 
         // Health checks

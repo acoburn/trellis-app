@@ -23,3 +23,4 @@ kafka:
     bootstrapServers: localhost:9092
 
 enableWebAc: false
+userPrefix: "user:"

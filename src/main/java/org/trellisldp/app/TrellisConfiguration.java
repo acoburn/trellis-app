@@ -47,6 +47,9 @@ class TrellisConfiguration extends Configuration {
     @NotNull
     private String topic = "trellis";
 
+    @NotNull
+    private String userPrefix = "user:";
+
     private Boolean async = false;
 
     private Boolean enableCORS = true;
@@ -215,5 +218,15 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public Boolean getEnableWebAc() {
         return enableWebAc;
+    }
+
+    @JsonProperty
+    public void setUserPrefix(final String userPrefix) {
+        this.userPrefix = userPrefix;
+    }
+
+    @JsonProperty
+    public String getUserPrefix() {
+        return userPrefix;
     }
 }
