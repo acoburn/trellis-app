@@ -37,7 +37,7 @@ ext {
     trellisBinaryVersion = '0.2.0'
     trellisConstraintVersion = '0.2.2'
     trellisKafkaVersion = '0.2.0'
-    trellisHttpVersion = '0.3.0'
+    trellisHttpVersion = '0.3.1-SNAPSHOT'
     trellisIdVersion = '0.2.0'
     trellisIoJenaVersion = '0.2.0'
     trellisAuditVersion = '0.1.0'
@@ -76,10 +76,13 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-audit', version: trellisAuditVersion
     compile group: 'org.trellisldp', name: 'trellis-event-serialization', version: trellisEventVersion
     compile group: 'org.trellisldp', name: 'trellis-webac', version: trellisWebacVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
+
+    runtime group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
 
@@ -87,6 +90,7 @@ dependencies {
 }
 
 shadowJar {
+    mergeServiceFiles()
     baseName = 'trellis'
     classifier = null
     version = null

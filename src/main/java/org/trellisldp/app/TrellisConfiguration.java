@@ -58,6 +58,12 @@ class TrellisConfiguration extends Configuration {
 
     private Integer cacheMaxAge = 86400;
 
+    private Boolean enableAnonAuth = false;
+
+    private Boolean enableBasicAuth = true;
+
+    private Boolean enableOAuth = true;
+
     /**
      * Set async mode
      * @param async true if async mode is enabled; false otherwise
@@ -240,5 +246,35 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public Integer getCacheMaxAge() {
         return cacheMaxAge;
+    }
+
+    @JsonProperty
+    public void setEnableBasicAuth(final Boolean enableBasicAuth) {
+        this.enableBasicAuth = enableBasicAuth;
+    }
+
+    @JsonProperty
+    public Boolean getEnableBasicAuth() {
+        return enableBasicAuth;
+    }
+
+    @JsonProperty
+    public void setEnableOAuth(final Boolean enableOAuth) {
+        this.enableOAuth = enableOAuth;
+    }
+
+    @JsonProperty
+    public Boolean getEnableOAuth() {
+        return enableOAuth;
+    }
+
+    @JsonProperty
+    public void setEnableAnonAuth(final Boolean enableAnonAuth) {
+        this.enableAnonAuth = enableAnonAuth;
+    }
+
+    @JsonProperty
+    public Boolean getEnableAnonAuth() {
+        return enableAnonAuth;
     }
 }

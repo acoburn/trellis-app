@@ -21,10 +21,16 @@ import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 import static org.trellisldp.rosid.common.RosidConstants.ZNODE_NAMESPACES;
 
 import io.dropwizard.Application;
+import io.dropwizard.auth.AuthFilter;
+import io.dropwizard.auth.PrincipalImpl;
+import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
+import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -166,13 +172,33 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
             .register("kafka", new KafkaHealthCheck(config.getZookeeper().getEnsembleServers(),
                         config.getZookeeper().getTimeout()));
 
+        // Authentication
+        final List<AuthFilter> filters = new ArrayList<>();
+
+        if (config.getEnableBasicAuth()) {
+            filters.add(new BasicCredentialAuthFilter.Builder<PrincipalImpl>()
+                    .setAuthenticator(new TrellisAuthenticator())
+                    .setRealm("Trellis Basic Authentication")
+                    .buildAuthFilter());
+        }
+
+        if (config.getEnableAnonAuth()) {
+            filters.add(new AnonymousAuthFilter.Builder()
+                .setAuthenticator(new AnonymousAuthenticator())
+                .buildAuthFilter());
+        }
+
+        if (!filters.isEmpty()) {
+            environment.jersey().register(new ChainedAuthFilter<>(filters));
+        }
+
         // Resource matchers
         environment.jersey().register(new RootResource(ioService, partitionUrls, serverProperties));
         environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, partitionUrls));
         environment.jersey().register(new MultipartUploader(resourceService, binaryService, partitionUrls));
 
         // Filters
-        environment.jersey().register(new AgentAuthorizationFilter(agentService, "admin"));
+        environment.jersey().register(new AgentAuthorizationFilter(agentService, asList("admin")));
         environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
 
         if (config.getEnableWebAc()) {
