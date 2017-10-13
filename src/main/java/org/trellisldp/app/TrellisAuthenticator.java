@@ -13,11 +13,15 @@
  */
 package org.trellisldp.app;
 
+import static java.nio.file.Files.lines;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.PrincipalImpl;
@@ -32,11 +36,30 @@ class TrellisAuthenticator implements Authenticator<BasicCredentials, PrincipalI
 
     private final static Logger LOGGER = getLogger(TrellisAuthenticator.class);
 
+    private final String credentialsFile;
+
+    public TrellisAuthenticator(final String credentialsFile) {
+        this.credentialsFile = credentialsFile;
+    }
+
     @Override
     public Optional<PrincipalImpl> authenticate(final BasicCredentials credentials) throws AuthenticationException {
-        LOGGER.info("Checking: {}", credentials);
-        if ("admin".equals(credentials.getPassword())) {
-            return of(new PrincipalImpl(credentials.getUsername()));
+        return lookup(credentials).map(PrincipalImpl::new);
+    }
+
+    private Optional<String> lookup(final BasicCredentials creds) {
+        final File file = new File(credentialsFile);
+        if (!file.exists()) {
+            return empty();
+        }
+
+        try (final Stream<String> fileLines = lines(file.toPath())) {
+            return fileLines.map(String::trim).filter(line -> line.startsWith("#"))
+                .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
+                .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
+                .map(d -> d[2]).findFirst();
+        } catch (final IOException ex) {
+            LOGGER.error("Error processing credentials file: {}", ex.getMessage());
         }
         return empty();
     }

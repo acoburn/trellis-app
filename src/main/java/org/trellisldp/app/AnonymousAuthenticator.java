@@ -19,6 +19,7 @@ import java.util.Optional;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.PrincipalImpl;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * Class Anonymous Authenticator
@@ -28,6 +29,6 @@ class AnonymousAuthenticator implements Authenticator<String, PrincipalImpl> {
 
     @Override
     public Optional<PrincipalImpl> authenticate(final String credentials) throws AuthenticationException {
-        return of(new PrincipalImpl(""));
+        return of(new PrincipalImpl(Trellis.AnonymousUser.getIRIString()));
     }
 }

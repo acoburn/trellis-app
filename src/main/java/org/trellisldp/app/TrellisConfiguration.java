@@ -50,6 +50,9 @@ class TrellisConfiguration extends Configuration {
     @NotNull
     private String userPrefix = "user:";
 
+    @NotNull
+    private String basicAuthFile = "users.auth";
+
     private Boolean async = false;
 
     private Boolean enableCORS = true;
@@ -276,5 +279,15 @@ class TrellisConfiguration extends Configuration {
     @JsonProperty
     public Boolean getEnableAnonAuth() {
         return enableAnonAuth;
+    }
+
+    @JsonProperty
+    public void setBasicAuthFile(final String basicAuthFile) {
+        this.basicAuthFile = basicAuthFile;
+    }
+
+    @JsonProperty
+    public String getBasicAuthFile() {
+        return basicAuthFile;
     }
 }

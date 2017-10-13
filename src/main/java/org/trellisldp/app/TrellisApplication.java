@@ -40,7 +40,7 @@ import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
-import org.trellisldp.agent.PrefixingAgent;
+import org.trellisldp.agent.SimpleAgent;
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
@@ -161,7 +161,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                         .filter(e -> e.getValue().getProperty(PREFIX).startsWith(FILE_PREFIX + e.getKey()))
                         .collect(toMap(Map.Entry::getKey, e -> e.getValue().getProperty(BINARY_PATH))))));
 
-        final AgentService agentService = new PrefixingAgent(config.getUserPrefix());
+        final AgentService agentService = new SimpleAgent();
         final AccessControlService accessControlService = new WebACService(resourceService);
 
         // Health checks
@@ -177,10 +177,19 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         if (config.getEnableBasicAuth()) {
             filters.add(new BasicCredentialAuthFilter.Builder<PrincipalImpl>()
-                    .setAuthenticator(new TrellisAuthenticator())
+                    .setAuthenticator(new TrellisAuthenticator(config.getBasicAuthFile()))
                     .setRealm("Trellis Basic Authentication")
                     .buildAuthFilter());
         }
+
+        /*
+        if (config.getEnableOAuth()) {
+            filters.add(new OAuthFilter.Builder<PrincipalImpl>()
+                    .setAuthenticator(new OAuthAuthenticator())
+                    .setPrefix("Bearer")
+                    .buildAuthFilter());
+        }
+        */
 
         if (config.getEnableAnonAuth()) {
             filters.add(new AnonymousAuthFilter.Builder()
