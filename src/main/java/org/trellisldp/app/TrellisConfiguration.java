@@ -21,13 +21,25 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.trellisldp.app.config.AssetConfiguration;
+import org.trellisldp.app.config.AuthConfiguration;
+import org.trellisldp.app.config.CORSConfiguration;
+import org.trellisldp.app.config.KafkaConfiguration;
+import org.trellisldp.app.config.NamespaceConfiguration;
+import org.trellisldp.app.config.PartitionConfiguration;
+import org.trellisldp.app.config.ZookeeperConfiguration;
+
 /**
  * @author acoburn
  */
 class TrellisConfiguration extends Configuration {
 
+    private Boolean async = false;
+
+    private Integer cacheMaxAge = 86400;
+
     @NotNull
-    private String namespaceFile;
+    private AuthConfiguration auth = new AuthConfiguration();
 
     @NotNull
     private String defaultName = "Trellis";
@@ -45,27 +57,10 @@ class TrellisConfiguration extends Configuration {
     private ZookeeperConfiguration zookeeper;
 
     @NotNull
-    private String topic = "trellis";
+    private CORSConfiguration cors = new CORSConfiguration();
 
     @NotNull
-    private String userPrefix = "user:";
-
-    @NotNull
-    private String basicAuthFile = "users.auth";
-
-    private Boolean async = false;
-
-    private Boolean enableCORS = true;
-
-    private Boolean enableWebAc = true;
-
-    private Integer cacheMaxAge = 86400;
-
-    private Boolean enableAnonAuth = false;
-
-    private Boolean enableBasicAuth = true;
-
-    private Boolean enableOAuth = true;
+    private NamespaceConfiguration namespaces = new NamespaceConfiguration();
 
     /**
      * Set async mode
@@ -122,24 +117,6 @@ class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Get the namespace file location
-     * @return the namespace file location
-     */
-    @JsonProperty
-    public String getNamespaceFile() {
-        return namespaceFile;
-    }
-
-    /**
-     * Set the namespace file location
-     * @param file the namespace file location
-     */
-    @JsonProperty
-    public void setNamespaceFile(final String file) {
-        this.namespaceFile = file;
-    }
-
-    /**
      * Get the application name
      * @return the name
      */
@@ -193,54 +170,6 @@ class TrellisConfiguration extends Configuration {
         return zookeeper;
     }
 
-    /**
-     * Set the event topic name
-     * @param topic the name of the event topic
-     */
-    @JsonProperty
-    public void setTopic(final String topic) {
-        this.topic = topic;
-    }
-
-    /**
-     * Get the event topic name
-     * @return the name of the event topic
-     */
-    @JsonProperty
-    public String getTopic() {
-        return topic;
-    }
-
-    @JsonProperty
-    public void setEnableCORS(final Boolean enableCORS) {
-        this.enableCORS = enableCORS;
-    }
-
-    @JsonProperty
-    public Boolean getEnableCORS() {
-        return enableCORS;
-    }
-
-    @JsonProperty
-    public void setEnableWebAc(final Boolean enableWebAc) {
-        this.enableWebAc = enableWebAc;
-    }
-
-    @JsonProperty
-    public Boolean getEnableWebAc() {
-        return enableWebAc;
-    }
-
-    @JsonProperty
-    public void setUserPrefix(final String userPrefix) {
-        this.userPrefix = userPrefix;
-    }
-
-    @JsonProperty
-    public String getUserPrefix() {
-        return userPrefix;
-    }
-
     @JsonProperty
     public void setCacheMaxAge(final Integer cacheMaxAge) {
         this.cacheMaxAge = cacheMaxAge;
@@ -252,42 +181,32 @@ class TrellisConfiguration extends Configuration {
     }
 
     @JsonProperty
-    public void setEnableBasicAuth(final Boolean enableBasicAuth) {
-        this.enableBasicAuth = enableBasicAuth;
+    public void setCors(final CORSConfiguration cors) {
+        this.cors = cors;
     }
 
     @JsonProperty
-    public Boolean getEnableBasicAuth() {
-        return enableBasicAuth;
+    public CORSConfiguration getCors() {
+        return cors;
     }
 
     @JsonProperty
-    public void setEnableOAuth(final Boolean enableOAuth) {
-        this.enableOAuth = enableOAuth;
+    public void setAuth(final AuthConfiguration auth) {
+        this.auth = auth;
     }
 
     @JsonProperty
-    public Boolean getEnableOAuth() {
-        return enableOAuth;
+    public AuthConfiguration getAuth() {
+        return auth;
     }
 
     @JsonProperty
-    public void setEnableAnonAuth(final Boolean enableAnonAuth) {
-        this.enableAnonAuth = enableAnonAuth;
+    public void setNamespaces(final NamespaceConfiguration namespaces) {
+        this.namespaces = namespaces;
     }
 
     @JsonProperty
-    public Boolean getEnableAnonAuth() {
-        return enableAnonAuth;
-    }
-
-    @JsonProperty
-    public void setBasicAuthFile(final String basicAuthFile) {
-        this.basicAuthFile = basicAuthFile;
-    }
-
-    @JsonProperty
-    public String getBasicAuthFile() {
-        return basicAuthFile;
+    public NamespaceConfiguration getNamespaces() {
+        return namespaces;
     }
 }

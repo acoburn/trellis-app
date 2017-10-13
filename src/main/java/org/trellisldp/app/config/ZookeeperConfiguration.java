@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 /**
  * @author acoburn
  */
-class ZookeeperConfiguration {
+public class ZookeeperConfiguration {
 
     private static final Integer DEFAULT_TIMEOUT = 1000;
     private static final Integer DEFAULT_RETRY_MS = 2000;
@@ -128,3 +128,4 @@ class ZookeeperConfiguration {
         this.retryMaxMs = retryMaxMs;
     }
 }
+

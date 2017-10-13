@@ -14,22 +14,24 @@
 package org.trellisldp.app;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.joining;
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.trellisldp.rosid.common.RosidConstants.TOPIC_EVENT;
 import static org.trellisldp.rosid.common.RosidConstants.ZNODE_NAMESPACES;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFilter;
-import io.dropwizard.auth.PrincipalImpl;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
+import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +43,16 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
 import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.api.AccessControlService;
+import org.trellisldp.api.AgentService;
+import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.IOService;
+import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.app.config.AuthConfiguration;
+import org.trellisldp.app.config.PartitionConfiguration;
 import org.trellisldp.app.health.KafkaHealthCheck;
 import org.trellisldp.app.health.ZookeeperHealthCheck;
 import org.trellisldp.binary.DefaultBinaryService;
@@ -57,15 +69,6 @@ import org.trellisldp.io.JenaIOService;
 import org.trellisldp.kafka.KafkaPublisher;
 import org.trellisldp.rosid.common.Namespaces;
 import org.trellisldp.rosid.file.FileResourceService;
-import org.trellisldp.api.AccessControlService;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.EventService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeRepositoryException;
 import org.trellisldp.webac.WebACService;
 
 
@@ -79,6 +82,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     private static final String BINARY_PATH = "path";
     private static final String FILE_PREFIX = "file:";
     private static final String PREFIX = "prefix";
+    private static final String BINARY_LEVELS = "levels";
+    private static final String BINARY_LENGTH = "length";
 
     /**
      * The main entry point
@@ -115,17 +120,13 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         // Other configurations
         final Map<String, Properties> partitions = config.getPartitions().stream()
             .collect(toMap(PartitionConfiguration::getId, p -> {
-                final Properties props = p.getBinaries().asProperties();
+                final Properties props = new Properties();
+                props.setProperty(PREFIX, "file:" + p.getId());
                 props.setProperty(BASE_URL, p.getBaseUrl());
                 props.setProperty(RESOURCE_PATH, p.getResources().getPath());
-                if (props.getProperty(PREFIX).startsWith(FILE_PREFIX)) {
-                    if (isNull(props.getProperty(BINARY_PATH))) {
-                        throw new RuntimeRepositoryException("No path value defined for file-based binary storage");
-                    }
-                    if (!props.getProperty(PREFIX).startsWith(FILE_PREFIX + p.getId() + "/")) {
-                        throw new RuntimeRepositoryException("Prefix value does not include partition!");
-                    }
-                }
+                props.setProperty(BINARY_PATH, p.getBinaries().getPath());
+                props.setProperty(BINARY_LEVELS, p.getBinaries().getLevels().toString());
+                props.setProperty(BINARY_LENGTH, p.getBinaries().getLength().toString());
                 return props;
             }));
 
@@ -152,9 +153,14 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 curator, producer, notifications, idService.getSupplier(), config.getAsync());
 
         final TreeCache cache = new TreeCache(curator, ZNODE_NAMESPACES);
-        final NamespaceService namespaceService = new Namespaces(curator, cache, config.getNamespaceFile());
+        final NamespaceService namespaceService = new Namespaces(curator, cache, config.getNamespaces().getFile());
 
-        final IOService ioService = new JenaIOService(namespaceService, config.getAssets().asMap());
+        // TODO -- JDK9 initializer
+        final Map<String, String> assetMap = new HashMap<>();
+        assetMap.put("icon", config.getAssets().getIcon());
+        assetMap.put("css", config.getAssets().getCss().stream().map(String::trim).collect(joining(",")));
+        assetMap.put("js", config.getAssets().getJs().stream().map(String::trim).collect(joining(",")));
+        final IOService ioService = new JenaIOService(namespaceService, assetMap);
 
         final BinaryService binaryService = new DefaultBinaryService(idService, partitions,
                 asList(new FileResolver(partitions.entrySet().stream()
@@ -174,24 +180,23 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // Authentication
         final List<AuthFilter> filters = new ArrayList<>();
+        final AuthConfiguration auth = config.getAuth();
 
-        if (config.getEnableBasicAuth()) {
-            filters.add(new BasicCredentialAuthFilter.Builder<PrincipalImpl>()
-                    .setAuthenticator(new TrellisAuthenticator(config.getBasicAuthFile()))
+        if (auth.getBasic().getEnabled()) {
+            filters.add(new BasicCredentialAuthFilter.Builder<Principal>()
+                    .setAuthenticator(new TrellisAuthenticator(auth.getBasic().getUsersFile()))
                     .setRealm("Trellis Basic Authentication")
                     .buildAuthFilter());
         }
 
-        /*
-        if (config.getEnableOAuth()) {
-            filters.add(new OAuthFilter.Builder<PrincipalImpl>()
-                    .setAuthenticator(new OAuthAuthenticator())
+        if (auth.getJwt().getEnabled()) {
+            filters.add(new OAuthCredentialAuthFilter.Builder<Principal>()
+                    .setAuthenticator(new JwtAuthenticator(auth.getJwt().getKey()))
                     .setPrefix("Bearer")
                     .buildAuthFilter());
         }
-        */
 
-        if (config.getEnableAnonAuth()) {
+        if (auth.getAnon().getEnabled()) {
             filters.add(new AnonymousAuthFilter.Builder()
                 .setAuthenticator(new AnonymousAuthenticator())
                 .buildAuthFilter());
@@ -210,22 +215,18 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         environment.jersey().register(new AgentAuthorizationFilter(agentService, asList("admin")));
         environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
 
-        if (config.getEnableWebAc()) {
+        // Authorization
+        if (auth.getWebac().getEnabled()) {
             environment.jersey().register(new WebAcFilter(partitionUrls, asList("Authorization"),
                         accessControlService));
         }
 
-        if (config.getEnableCORS()) {
-            // TODO - make the CORS filter configurable
-            environment.jersey().register(new CrossOriginResourceSharingFilter(asList("*"),
-                        // Allowed methods
-                        asList("PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST"),
-                        // Allowed headers
-                        asList("Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug",
-                            "Digest"),
-                        // Exposed headers
-                        asList("Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location",
-                            "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary"), true, 180));
+        // CORS
+        if (config.getCors().getEnabled()) {
+            environment.jersey().register(new CrossOriginResourceSharingFilter(
+                        config.getCors().getAllowOrigin(), config.getCors().getAllowMethods(),
+                        config.getCors().getAllowHeaders(), config.getCors().getExposeHeaders(),
+                        config.getCors().getAllowCredentials(), config.getCors().getMaxAge()));
         }
     }
 }

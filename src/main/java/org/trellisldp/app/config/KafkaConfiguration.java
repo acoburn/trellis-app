@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * @author acoburn
  */
-class KafkaConfiguration {
+public class KafkaConfiguration {
 
     private static final String DEFAULT_ACKS = "all";
     private static final Integer DEFAULT_BATCH_SIZE = 16384;
@@ -39,6 +39,9 @@ class KafkaConfiguration {
     // TODO - JDK 9
     private final Map<String, String> other = new HashMap<>();
 
+    /**
+     * Create a new Kafka configuration
+     */
     public KafkaConfiguration() {
         other.put("acks", DEFAULT_ACKS);
         other.put("batch.size", DEFAULT_BATCH_SIZE.toString());
@@ -86,3 +89,5 @@ class KafkaConfiguration {
         return props;
     }
 }
+
+

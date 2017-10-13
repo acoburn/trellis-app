@@ -11,16 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author acoburn
  */
-class PartitionConfiguration {
+public class PartitionConfiguration {
 
     @NotNull
     private ResourceConfiguration resources;
@@ -71,8 +73,8 @@ class PartitionConfiguration {
     }
 
     /**
-     * Get the LDP-RS directory
-     * @return the LDP-RS directory
+     * Get the LDP-RS configuration
+     * @return the LDP-RS configuration
      */
     @JsonProperty
     public ResourceConfiguration getResources() {
@@ -80,8 +82,8 @@ class PartitionConfiguration {
     }
 
     /**
-     * Set the LDP-RS directory
-     * @param directory the LDP-RS directory
+     * Set the LDP-RS resource configuration
+     * @param config the LDP-RS resource configuration
      */
     @JsonProperty
     public void setResources(final ResourceConfiguration config) {

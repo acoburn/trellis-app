@@ -19,6 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -32,7 +33,7 @@ import org.slf4j.Logger;
  * Class Trellis Authenticator
  * @author acoburn
  */
-class TrellisAuthenticator implements Authenticator<BasicCredentials, PrincipalImpl> {
+class TrellisAuthenticator implements Authenticator<BasicCredentials, Principal> {
 
     private final static Logger LOGGER = getLogger(TrellisAuthenticator.class);
 
@@ -43,7 +44,7 @@ class TrellisAuthenticator implements Authenticator<BasicCredentials, PrincipalI
     }
 
     @Override
-    public Optional<PrincipalImpl> authenticate(final BasicCredentials credentials) throws AuthenticationException {
+    public Optional<Principal> authenticate(final BasicCredentials credentials) throws AuthenticationException {
         return lookup(credentials).map(PrincipalImpl::new);
     }
 
@@ -54,7 +55,7 @@ class TrellisAuthenticator implements Authenticator<BasicCredentials, PrincipalI
         }
 
         try (final Stream<String> fileLines = lines(file.toPath())) {
-            return fileLines.map(String::trim).filter(line -> line.startsWith("#"))
+            return fileLines.map(String::trim).filter(line -> !line.startsWith("#"))
                 .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
                 .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
                 .map(d -> d[2]).findFirst();

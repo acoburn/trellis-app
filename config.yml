@@ -12,14 +12,13 @@ logging:
 partitions:
     - id: repository
       binaries:
-          prefix: "file:repository/"
           path: /Users/acoburn/trellisData/binaries
-          levels: 4
       resources:
           path: /Users/acoburn/trellisData/resources
       baseUrl: http://localhost:8080/
 
-namespaceFile: /Users/acoburn/trellisData/namespaces.json
+namespaces:
+    file: /Users/acoburn/trellisData/namespaces.json
 
 zookeeper:
     ensembleServers: localhost:2181
@@ -27,8 +26,17 @@ zookeeper:
 kafka:
     bootstrapServers: localhost:9092
 
-enableWebAc: false
-userPrefix: "user:"
-enableBasicAuth: true
-enableAnonAuth: true
-basicAuthFile: users.auth
+auth:
+    webac:
+        enabled: false
+    anon:
+        enabled: true
+    basic:
+        enabled: true
+        usersFile: users.auth
+
+cors:
+    allowOrigin:
+        - "*"
+    maxAge: 180
+

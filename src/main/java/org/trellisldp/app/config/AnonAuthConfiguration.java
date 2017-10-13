@@ -11,34 +11,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.NotNull;
 
 /**
  * @author acoburn
  */
-class ResourceConfiguration {
+public class AnonAuthConfiguration {
 
-    @NotNull
-    private String path;
+    private Boolean enabled = false;
 
     /**
-     * Get the underlying path for file-based resources
-     * @return the path
+     * Get whether basic authentication has been enabled
+     * @return true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public String getPath() {
-        return path;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
     /**
-     * Set the underlying path for file-based resources
-     * @param path the path
+     * Enable or disable basic authentication
+     * @param enabled true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public void setPath(final String path) {
-        this.path = path;
+    public void setEnabled(final Boolean enabled) {
+        this.enabled = enabled;
     }
 }

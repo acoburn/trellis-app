@@ -42,7 +42,7 @@ ext {
     trellisIoJenaVersion = '0.2.0'
     trellisAuditVersion = '0.1.0'
     trellisEventVersion = '0.1.0'
-    trellisRosidFileVersion = '0.1.0'
+    trellisRosidFileVersion = '0.1.1'
     trellisWebacVersion = '0.2.0'
 
     commonsRdfVersion = '0.3.0-incubating'
@@ -51,9 +51,13 @@ ext {
     slf4jVersion = '1.7.25'
     dropwizardVersion = '1.2.0'
     activationApiVersion = '1.2.0'
+    jwtVersion = '0.9.0'
+    jaxbVersion = '2.3.0'
 
     /* Testing */
-    junitVersion = '4.12'
+    apiguardianVersion = '1.0.0'
+    junitVersion = '5.0.1'
+    junitPlatformVersion = '1.0.1'
 }
 
 
@@ -63,6 +67,13 @@ configurations {
 
 dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
+    compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+
     compile group: 'org.trellisldp', name: 'trellis-binary', version: trellisBinaryVersion
     compile group: 'org.trellisldp', name: 'trellis-constraint-rules', version: trellisConstraintVersion
     compile group: 'org.trellisldp', name: 'trellis-io-jena', version: trellisIoJenaVersion
@@ -76,15 +87,12 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-audit', version: trellisAuditVersion
     compile group: 'org.trellisldp', name: 'trellis-event-serialization', version: trellisEventVersion
     compile group: 'org.trellisldp', name: 'trellis-webac', version: trellisWebacVersion
-    compile group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
-    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
-    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
 
-    runtime group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+    runtime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
 
-    testCompile group: 'junit', name: 'junit', version: junitVersion
+    testCompile group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
 
     buildToolsConfig 'org.trellisldp:trellis-build-tools:0.2.0'
 }
@@ -100,10 +108,6 @@ repositories {
     jcenter()
     mavenCentral()
     mavenLocal()
-    // TODO -- remove this after the first release of the API
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
-    }
 }
 
 gradle.projectsEvaluated {
@@ -253,7 +257,7 @@ task docs(type: Javadoc) {
     options {
         links "http://docs.oracle.com/javase/8/docs/api/"
         links "https://commons.apache.org/proper/commons-rdf/apidocs/"
-        links "http://www.trellisldp.org/apidocs/"
+        links "https://trellis-ldp.github.io/trellis/apidocs/"
     }
 }
 

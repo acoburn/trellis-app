@@ -27,6 +27,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.HttpHeaders;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -50,7 +51,7 @@ public class AnonymousAuthFilter extends AuthFilter<String, PrincipalImpl> {
         ctx.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                return new PrincipalImpl("");
+                return new PrincipalImpl(Trellis.AnonymousUser.getIRIString());
             }
 
             @Override
