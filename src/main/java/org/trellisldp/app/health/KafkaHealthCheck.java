@@ -15,14 +15,10 @@ package org.trellisldp.app.health;
 
 import static com.codahale.metrics.health.HealthCheck.Result.healthy;
 import static com.codahale.metrics.health.HealthCheck.Result.unhealthy;
-import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 
 import com.codahale.metrics.health.HealthCheck;
 
-import java.io.IOException;
-
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.KeeperException;
 
 /**
@@ -32,26 +28,21 @@ public class KafkaHealthCheck extends ZookeeperHealthCheck {
 
     /**
      * Create an object that checks the health of a zk ensemble
-     * @param connectString the connection string
-     * @param timeout the timeout
+     * @param client the curator client
      */
-    public KafkaHealthCheck(final String connectString, final int timeout) {
-        super(connectString, timeout);
+    public KafkaHealthCheck(final CuratorFramework client) {
+        super(client);
     }
 
     @Override
     protected HealthCheck.Result check() throws InterruptedException {
-        try (final CuratorFramework zk = newClient(connectString, new RetryNTimes(RETRIES, timeout))) {
-            zk.start();
-            zk.blockUntilConnected();
-            if (!zk.getZookeeperClient().isConnected()) {
-                return unhealthy("Could not connect to zookeeper: " + connectString);
-            } else if (zk.getZookeeperClient().getZooKeeper().getChildren("/brokers/ids", false).isEmpty()) {
+        try {
+            if (!client.getZookeeperClient().isConnected()) {
+                return unhealthy("Zookeeper client not connected");
+            } else if (client.getZookeeperClient().getZooKeeper().getChildren("/brokers/ids", false).isEmpty()) {
                 return unhealthy("No Kafka brokers are connected.");
             }
             return healthy("Kafka appears to be in fine health.");
-        } catch (final IOException ex) {
-            return unhealthy("Error connecting to Zookeeper: " + ex.getMessage());
         } catch (final KeeperException ex) {
             return unhealthy("Error fetching kafka broker list: " + ex.getMessage());
         } catch (final Exception ex) {

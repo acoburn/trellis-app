@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.auth;
 
 import static java.nio.file.Files.lines;
 import static java.util.Optional.empty;
@@ -30,16 +30,20 @@ import io.dropwizard.auth.basic.BasicCredentials;
 import org.slf4j.Logger;
 
 /**
- * Class Trellis Authenticator
+ * BasicAuth Authenticator
  * @author acoburn
  */
-class TrellisAuthenticator implements Authenticator<BasicCredentials, Principal> {
+public class BasicAuthenticator implements Authenticator<BasicCredentials, Principal> {
 
-    private final static Logger LOGGER = getLogger(TrellisAuthenticator.class);
+    private static final Logger LOGGER = getLogger(BasicAuthenticator.class);
 
     private final String credentialsFile;
 
-    public TrellisAuthenticator(final String credentialsFile) {
+    /**
+     * Create an authenticator for BasicAuth
+     * @param credentialsFile the file where credentials are stored
+     */
+    public BasicAuthenticator(final String credentialsFile) {
         this.credentialsFile = credentialsFile;
     }
 
@@ -58,7 +62,7 @@ class TrellisAuthenticator implements Authenticator<BasicCredentials, Principal>
             return fileLines.map(String::trim).filter(line -> !line.startsWith("#"))
                 .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
                 .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
-                .map(d -> d[2]).findFirst();
+                .map(d -> d[2].trim()).findFirst();
         } catch (final IOException ex) {
             LOGGER.error("Error processing credentials file: {}", ex.getMessage());
         }

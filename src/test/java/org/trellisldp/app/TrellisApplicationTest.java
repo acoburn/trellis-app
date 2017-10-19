@@ -13,22 +13,25 @@
  */
 package org.trellisldp.app;
 
-import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Optional;
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
-import io.dropwizard.auth.PrincipalImpl;
-import org.trellisldp.vocabulary.Trellis;
+import io.dropwizard.Application;
+
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
- * Class Anonymous Authenticator
  * @author acoburn
  */
-class AnonymousAuthenticator implements Authenticator<String, PrincipalImpl> {
+@RunWith(JUnitPlatform.class)
+public class TrellisApplicationTest {
 
-    @Override
-    public Optional<PrincipalImpl> authenticate(final String credentials) throws AuthenticationException {
-        return of(new PrincipalImpl(Trellis.AnonymousUser.getIRIString()));
+    @Test
+    public void testGetName() {
+        final Application<TrellisConfiguration> app = new TrellisApplication();
+        assertEquals("Trellis LDP", app.getName());
+
     }
 }

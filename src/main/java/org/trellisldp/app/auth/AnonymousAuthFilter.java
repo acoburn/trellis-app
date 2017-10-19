@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.auth;
 
 import static java.util.Objects.nonNull;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
@@ -33,7 +33,7 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 @Priority(AUTHENTICATION)
-public class AnonymousAuthFilter extends AuthFilter<String, PrincipalImpl> {
+public class AnonymousAuthFilter extends AuthFilter<String, Principal> {
 
     private AnonymousAuthFilter() {
     }
@@ -75,7 +75,7 @@ public class AnonymousAuthFilter extends AuthFilter<String, PrincipalImpl> {
      * Builder for an anonymous auth filter
      */
     public static class Builder
-            extends AuthFilterBuilder<String, PrincipalImpl, AnonymousAuthFilter> {
+            extends AuthFilterBuilder<String, Principal, AnonymousAuthFilter> {
         @Override
         protected AnonymousAuthFilter newInstance() {
             return new AnonymousAuthFilter();

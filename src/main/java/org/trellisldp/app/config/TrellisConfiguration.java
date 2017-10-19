@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -21,18 +21,10 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.trellisldp.app.config.AssetConfiguration;
-import org.trellisldp.app.config.AuthConfiguration;
-import org.trellisldp.app.config.CORSConfiguration;
-import org.trellisldp.app.config.KafkaConfiguration;
-import org.trellisldp.app.config.NamespaceConfiguration;
-import org.trellisldp.app.config.PartitionConfiguration;
-import org.trellisldp.app.config.ZookeeperConfiguration;
-
 /**
  * @author acoburn
  */
-class TrellisConfiguration extends Configuration {
+public class TrellisConfiguration extends Configuration {
 
     private Boolean async = false;
 
@@ -170,41 +162,73 @@ class TrellisConfiguration extends Configuration {
         return zookeeper;
     }
 
+    /**
+     * Set the cache max-age value
+     * @param cacheMaxAge the cache max age header value
+     */
     @JsonProperty
     public void setCacheMaxAge(final Integer cacheMaxAge) {
         this.cacheMaxAge = cacheMaxAge;
     }
 
+    /**
+     * Get the value of the cache max age
+     * @return the cache max age header value
+     */
     @JsonProperty
     public Integer getCacheMaxAge() {
         return cacheMaxAge;
     }
 
+    /**
+     * Set the CORS configuration
+     * @param cors the CORS configuration
+     */
     @JsonProperty
     public void setCors(final CORSConfiguration cors) {
         this.cors = cors;
     }
 
+    /**
+     * Get the CORS configuration
+     * @return the CORS configuration
+     */
     @JsonProperty
     public CORSConfiguration getCors() {
         return cors;
     }
 
+    /**
+     * Set the Auth configuration
+     * @param auth the Auth configuration
+     */
     @JsonProperty
     public void setAuth(final AuthConfiguration auth) {
         this.auth = auth;
     }
 
+    /**
+     * Get the Auth configuration
+     * @return the Auth configuration
+     */
     @JsonProperty
     public AuthConfiguration getAuth() {
         return auth;
     }
 
+    /**
+     * Set the namespaces configuration
+     * @param namespaces the namespaces configuration
+     */
     @JsonProperty
     public void setNamespaces(final NamespaceConfiguration namespaces) {
         this.namespaces = namespaces;
     }
 
+    /**
+     * Get the namespace configuration
+     * @return the namespace configuration
+     */
     @JsonProperty
     public NamespaceConfiguration getNamespaces() {
         return namespaces;

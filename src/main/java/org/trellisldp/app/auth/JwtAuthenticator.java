@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.auth;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -20,31 +21,41 @@ import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.security.Principal;
+import java.util.Base64;
 import java.util.Optional;
 
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.PrincipalImpl;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureException;
 
 import org.slf4j.Logger;
 
 /**
  * @author acoburn
  */
-class JwtAuthenticator implements Authenticator<String, Principal> {
+public class JwtAuthenticator implements Authenticator<String, Principal> {
 
-    private final static Logger LOGGER = getLogger(JwtAuthenticator.class);
+    private static final Logger LOGGER = getLogger(JwtAuthenticator.class);
 
-    public final static String WEBID = "webid";
+    public static final String WEBID = "webid";
 
     private final String key;
 
-    public JwtAuthenticator(final String key) {
-        this.key = key;
+    /**
+     * Create a JWT-based authenticator
+     * @param key a secret key
+     * @param encoded whether the key is encoded as base64
+     */
+    public JwtAuthenticator(final String key, final Boolean encoded) {
+        if (encoded) {
+            this.key = key;
+        } else {
+            this.key = Base64.getEncoder().encodeToString(key.getBytes(UTF_8));
+        }
     }
 
     @Override
@@ -70,6 +81,8 @@ class JwtAuthenticator implements Authenticator<String, Principal> {
                     return of(new PrincipalImpl(webid));
                 }
             }
+        } catch (final SignatureException ex) {
+            LOGGER.debug("Invalid signature: {}", ex.getMessage());
         } catch (final JwtException ex) {
             LOGGER.warn("Problem reading JWT value: {}", ex.getMessage());
         }

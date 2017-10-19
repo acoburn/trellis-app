@@ -3,6 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.1'
     id 'com.github.hierynomus.license' version '0.13.1'
     id 'net.researchgate.release' version '2.6.0'
+    id 'com.github.kt3k.coveralls' version '2.8.2'
     id 'org.sonarqube' version '2.5'
 }
 
@@ -58,6 +59,8 @@ ext {
     apiguardianVersion = '1.0.0'
     junitVersion = '5.0.1'
     junitPlatformVersion = '1.0.1'
+    curatorVersion = '4.0.0'
+    mockitoVersion = '2.11.0'
 }
 
 
@@ -93,6 +96,8 @@ dependencies {
     testCompile group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation group: 'org.apache.curator', name: 'curator-test', version: curatorVersion
 
     buildToolsConfig 'org.trellisldp:trellis-build-tools:0.2.0'
 }
@@ -116,6 +121,10 @@ gradle.projectsEvaluated {
     }
 }
 
+test {
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
 release {
     tagTemplate = '$name-$version'
 }
@@ -135,6 +144,13 @@ artifacts {
     archives javadocJar
     archives sourceJar
     archives shadowJar
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
 }
 
 jacoco {
@@ -181,8 +197,8 @@ uploadArchives {
             packaging 'jar'
             url 'http://www.trellisldp.org'
             inceptionYear '2017'
-            name 'College Trellis Repository Application'
-            description 'The trellis repository application'
+            name 'Trellis Linked Data Server'
+            description 'The trellis linked data server'
 
             organization {
                 name project.vendor
@@ -194,7 +210,7 @@ uploadArchives {
                     id 'acoburn'
                     name 'Aaron Coburn'
                     email 'acoburn @ (domain of organization url)'
-                    organization 'Amherst College'
+                    organization = 'Amherst College'
                     organizationUrl 'https://www.amherst.edu'
                     roles {
                         role 'developer'

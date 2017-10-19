@@ -22,6 +22,8 @@ public class JwtAuthConfiguration {
 
     private Boolean enabled = true;
 
+    private Boolean isEncoded = false;
+
     private String key;
 
     /**
@@ -58,5 +60,23 @@ public class JwtAuthConfiguration {
     @JsonProperty
     public void setKey(final String key) {
         this.key = key;
+    }
+
+    /**
+     * Get whether the key is base64 encoded
+     * @return true if the key is base64 encoded; false otherwise
+     */
+    @JsonProperty
+    public Boolean getBase64Encoded() {
+        return isEncoded;
+    }
+
+    /**
+     * Set whether the key is base64 encoded
+     * @param isEncoded true if the key is base64 encoded; false otherwise
+     */
+    @JsonProperty
+    public void setBase64Encoded(final Boolean isEncoded) {
+        this.isEncoded = isEncoded;
     }
 }
