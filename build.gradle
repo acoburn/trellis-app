@@ -40,7 +40,7 @@ ext {
     trellisKafkaVersion = '0.2.0'
     trellisHttpVersion = '0.3.1'
     trellisIdVersion = '0.2.0'
-    trellisIoJenaVersion = '0.2.0'
+    trellisIoJenaVersion = '0.2.1'
     trellisAuditVersion = '0.1.0'
     trellisEventVersion = '0.1.0'
     trellisRosidFileVersion = '0.1.1'
