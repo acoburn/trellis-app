@@ -47,7 +47,7 @@ ext {
     trellisWebacVersion = '0.2.0'
 
     commonsRdfVersion = '0.3.0-incubating'
-    commonsCodecVersion = '1.10'
+    commonsCodecVersion = '1.11'
     httpClientVersion = '4.5.2'
     slf4jVersion = '1.7.25'
     dropwizardVersion = '1.2.0'
