@@ -5,6 +5,13 @@ server:
 
 logging:
   level: WARN
+  appenders:
+    - type: file
+      currentLogFilename: /tmp/trellis/log/trellis.log
+      archive: true
+      archivedLogFilePattern: /tmp/trellis/log/trellis-%d.log
+      archivedFileCount: 5
+      maxFileSize: 100K
   loggers:
     org.trellisldp: INFO
     io.dropwizard: INFO
@@ -12,13 +19,13 @@ logging:
 partitions:
     - id: repository
       binaries:
-          path: /Users/acoburn/trellisData/binaries
+          path: /tmp/trellis/binaries
       resources:
-          path: /Users/acoburn/trellisData/resources
+          path: /tmp/trellis/resources
       baseUrl: http://localhost:8080/
 
 namespaces:
-    file: /Users/acoburn/trellisData/namespaces.json
+    file: /tmp/trellis/namespaces.json
 
 zookeeper:
     ensembleServers: localhost:2181
@@ -28,9 +35,13 @@ kafka:
 
 auth:
     webac:
-        enabled: false
+        enabled: true
     anon:
         enabled: true
+    jwt:
+        enabled: true
+        base64Encoded: false
+        key: secret
     basic:
         enabled: true
         usersFile: users.auth
