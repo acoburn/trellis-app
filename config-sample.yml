@@ -9,7 +9,7 @@ logging:
     - type: file
       currentLogFilename: /tmp/trellis/log/trellis.log
       archive: true
-      archivedLogFilePattern: /tmp/trellis/log/trellis-%d.log
+      archivedLogFilenamePattern: /tmp/trellis/log/trellis-%i.log
       archivedFileCount: 5
       maxFileSize: 100K
   loggers:
