@@ -43,7 +43,7 @@ ext {
     trellisIoJenaVersion = '0.2.1'
     trellisAuditVersion = '0.1.0'
     trellisEventVersion = '0.1.0'
-    trellisRosidFileVersion = '0.1.1'
+    trellisRosidFileVersion = '0.1.2'
     trellisWebacVersion = '0.2.0'
 
     commonsRdfVersion = '0.3.0-incubating'
