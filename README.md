@@ -10,14 +10,19 @@
 
 The trellis application requires both a [Zookeeper](http://zookeeper.apache.org) ensemble (3.5.x or later)
 and a [Kafka](http://kafka.apache.org) cluster. The location of both is defined must be defined in a configuration
-file, such as `config.yml` (see `config-sample.yml` for an example). Java 8 or 9 is required.
+file, such as `trellis.yml` (see `src/dist/config/trellis.yml` for an example). Java 8 or 9 is required.
 
-### Starting Trellis
+### Installation
 
-1. Run `./gradlew clean build` to build the application or download one of the releases.
-2. Start application with `java -jar build/libs/trellis.jar server config.yml`
-3. To check that trellis is running, check the URL: `http://localhost:8080`
+Unpack a zip or tar distribution. In that directory, run `./bin/trellis-app server ./config/trellis.yml`
 
-### Health Checks
+To check that trellis is running, check the URL: `http://localhost:8080`
 
 Application health checks are available at `http://localhost:8081/healthcheck`
+
+## Building Trellis
+
+1. Run `./gradlew clean install` to build the application or download one of the releases.
+2. The unpack the appropriate distribution in `./build/distributions`
+3. Start the application according to the steps above
+

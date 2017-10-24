@@ -7,9 +7,9 @@ logging:
   level: WARN
   appenders:
     - type: file
-      currentLogFilename: /tmp/trellis/log/trellis.log
+      currentLogFilename: ./log/trellis.log
       archive: true
-      archivedLogFilenamePattern: /tmp/trellis/log/trellis-%i.log
+      archivedLogFilenamePattern: ./log/trellis-%i.log
       archivedFileCount: 5
       maxFileSize: 100K
   loggers:
@@ -19,13 +19,13 @@ logging:
 partitions:
     - id: repository
       binaries:
-          path: /tmp/trellis/binaries
+          path: ./binaries
       resources:
-          path: /tmp/trellis/resources
+          path: ./resources
       baseUrl: http://localhost:8080/
 
 namespaces:
-    file: /tmp/trellis/namespaces.json
+    file: ./config/namespaces.json
 
 zookeeper:
     ensembleServers: localhost:2181
@@ -44,7 +44,7 @@ auth:
         key: secret
     basic:
         enabled: true
-        usersFile: users.auth
+        usersFile: ./config/users.auth
 
 cors:
     allowOrigin:

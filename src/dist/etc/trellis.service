@@ -1,13 +1,21 @@
 #!/bin/sh
+#
+# chkconfig: 345 80 20
+# description: Trellis LDP System
 
 . /etc/init.d/functions
 
-BASEDIR="/var/lib/trellis/"
-USER="trellis"
+TRELLIS_HOME="/var/lib/trellis/"
+TRELLIS_CONFIG="${TRELLIS_HOME}/config/trellis.yml"
+TRELLIS_USER="trellis"
+
+
+[ -f /etc/default/trellis ] && . /etc/default/trellis
 
 PROG="trellis"
-CMD="java -jar ./build/libs/trellis.jar server config.yml"
-PIDFILE="${BASEDIR}/trellis.pid"
+CMD="${TRELLIS_HOME}/bin/trellis_app server ${TRELLIS_CONFIG}"
+
+PIDFILE="${TRELLIS_HOME}/trellis.pid"
 RETVAL=0
 
 start () {
@@ -19,8 +27,8 @@ start () {
         RETVAL=1
         return
     fi
-    touch ${PIDFILE} ; chown ${USER} ${PIDFILE}
-    runuser ${USER} -c "${CMD} > /dev/null &
+    touch ${PIDFILE} ; chown ${TRELLIS_USER} ${PIDFILE}
+    runuser ${TRELLIS_USER} -c "cd ${TRELLIS_HOME} && ${CMD} > /dev/null &
     echo \$! > ${PIDFILE}"
     success ; echo
 }

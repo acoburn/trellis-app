@@ -1,6 +1,5 @@
 plugins {
     id 'com.github.ben-manes.versions' version '0.15.0'
-    id 'com.github.johnrengelman.shadow' version '2.0.1'
     id 'com.github.hierynomus.license' version '0.13.1'
     id 'net.researchgate.release' version '2.6.0'
     id 'com.github.kt3k.coveralls' version '2.8.2'
@@ -9,6 +8,7 @@ plugins {
 
 apply plugin: 'maven'
 apply plugin: 'java'
+apply plugin: 'distribution'
 apply plugin: 'application'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
@@ -102,11 +102,12 @@ dependencies {
     buildToolsConfig 'org.trellisldp:trellis-build-tools:0.2.0'
 }
 
-shadowJar {
-    mergeServiceFiles()
-    baseName = 'trellis'
-    classifier = null
-    version = null
+distributions {
+    main {
+        contents {
+            from { 'src/dist' }
+        }
+    }
 }
 
 repositories {
@@ -143,7 +144,6 @@ task javadocJar(type: Jar) {
 artifacts {
     archives javadocJar
     archives sourceJar
-    archives shadowJar
 }
 
 jacocoTestReport {
@@ -163,14 +163,6 @@ license {
     strictCheck true
     mapping {
         java = 'SLASHSTAR_STYLE'
-    }
-}
-
-publishing {
-    publications {
-        shadow(MavenPublication) { pub ->
-            project.shadow.component(pub)
-        }
     }
 }
 
