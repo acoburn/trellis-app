@@ -51,23 +51,21 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
      * @param encoded whether the key is encoded as base64
      */
     public JwtAuthenticator(final String key, final Boolean encoded) {
-        if (encoded) {
-            this.key = key;
-        } else {
-            this.key = Base64.getEncoder().encodeToString(key.getBytes(UTF_8));
-        }
+        this.key = encoded ? key : Base64.getEncoder().encodeToString(key.getBytes(UTF_8));
     }
 
     @Override
     public Optional<Principal> authenticate(final String credentials) throws AuthenticationException {
         try {
-            final Claims claims = Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(credentials).getBody();
+            // Parse the JWT claims
+            final Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(credentials).getBody();
+
             // Use a webid claim, if one exists
             if (claims.containsKey(WEBID)) {
                 return ofNullable(claims.get(WEBID, String.class)).map(PrincipalImpl::new);
             }
+
+            // Try generating a webid from other elements
             final String sub = claims.getSubject();
             if (nonNull(sub)) {
                 // use the sub claim if it looks like a webid
@@ -82,7 +80,7 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
                 }
             }
         } catch (final SignatureException ex) {
-            LOGGER.debug("Invalid signature: {}", ex.getMessage());
+            LOGGER.debug("Invalid signature, ignoring JWT token: {}", ex.getMessage());
         } catch (final JwtException ex) {
             LOGGER.warn("Problem reading JWT value: {}", ex.getMessage());
         }
