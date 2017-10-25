@@ -229,6 +229,11 @@ uploadArchives {
     }
 }
 
+task copyDistTask(type: Copy) {
+    from 'LICENSE'
+    into 'src/dist'
+}
+
 task processBuildTools(type: Copy) {
     from {
         configurations.buildToolsConfig.collect {
@@ -270,5 +275,6 @@ task docs(type: Javadoc) {
 }
 
 checkstyleMain.dependsOn processBuildTools
+assembleDist.dependsOn copyDistTask
 afterReleaseBuild.dependsOn docs
 

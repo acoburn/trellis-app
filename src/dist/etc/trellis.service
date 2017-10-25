@@ -1,89 +1,12 @@
-#!/bin/sh
-#
-# chkconfig: 345 80 20
-# description: Trellis LDP System
+[Unit]
+Description=trellis
+After=syslog.target
 
-. /etc/init.d/functions
+[Service]
+User=trellis
+EnvironmentFile=-/opt/trellis/etc/environment
+ExecStart=/opt/trellis/bin/trellis-app server /opt/trellis/etc/config.yml
+Restart=always
 
-TRELLIS_HOME="/var/lib/trellis/"
-TRELLIS_CONFIG="${TRELLIS_HOME}/config/trellis.yml"
-TRELLIS_USER="trellis"
-
-
-[ -f /etc/default/trellis ] && . /etc/default/trellis
-
-PROG="trellis"
-CMD="${TRELLIS_HOME}/bin/trellis_app server ${TRELLIS_CONFIG}"
-
-PIDFILE="${TRELLIS_HOME}/trellis.pid"
-RETVAL=0
-
-start () {
-    echo -n $"Starting ${PROG} "
-    if ( [ -f ${PIDFILE} ] )
-    then
-        echo -n "${PROG} is already running."
-        failure ; echo
-        RETVAL=1
-        return
-    fi
-    touch ${PIDFILE} ; chown ${TRELLIS_USER} ${PIDFILE}
-    runuser ${TRELLIS_USER} -c "cd ${TRELLIS_HOME} && ${CMD} > /dev/null &
-    echo \$! > ${PIDFILE}"
-    success ; echo
-}
-
-stop () {
-    echo -n $"Stopping ${PROG} "
-    if ( [ ! -f ${PIDFILE} ] )
-    then
-        echo -n "${PROG} is not running."
-        failure ; echo
-        RETVAL=1
-        return
-    fi
-    killproc -p ${PIDFILE}
-    RETVAL=$?
-    echo
-    if [ $RETVAL -eq 0 ] ; then
-        rm -f ${PIDFILE}
-    fi
-}
-
-status () {
-    if ( [ -f ${PIDFILE} ] )
-    then
-        echo -n "${PROG} is running."
-	else
-        echo -n "${PROG} is not running."
-    fi
-	echo
-}
-
-restart () {
-    stop
-    start
-}
-
-
-# See how we were called.
-case "$1" in
-  start)
-    start
-    ;;
-  stop)
-    stop
-    ;;
-  status)
-    status
-    ;;
-  restart)
-    restart
-    ;;
-  *)
-    echo $"Usage: $0 {start|stop}"
-    RETVAL=2
-    ;;
-esac
-
-exit $RETVAL
+[Install]
+WantedBy=multi-user.target

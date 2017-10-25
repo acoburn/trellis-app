@@ -2,14 +2,22 @@ server:
   applicationConnectors:
     - type: http
       port: 8080
+  requestLog:
+    appenders:
+      - type: file
+        currentLogFilename: /var/lib/trellis/log/access.log
+        archive: true
+        archivedLogFilenamePattern: /var/lib/trellis/log/access-%i.log
+        archivedFileCount: 5
+        maxFileSize: 100K
 
 logging:
   level: WARN
   appenders:
     - type: file
-      currentLogFilename: ./log/trellis.log
+      currentLogFilename: /var/lib/trellis/log/trellis.log
       archive: true
-      archivedLogFilenamePattern: ./log/trellis-%i.log
+      archivedLogFilenamePattern: /var/lib/trellis/log/trellis-%i.log
       archivedFileCount: 5
       maxFileSize: 100K
   loggers:
@@ -19,13 +27,13 @@ logging:
 partitions:
     - id: repository
       binaries:
-          path: ./binaries
+          path: /var/lib/trellis/binaries
       resources:
-          path: ./resources
+          path: /var/lib/trellis/resources
       baseUrl: http://localhost:8080/
 
 namespaces:
-    file: ./config/namespaces.json
+    file: /opt/trellis/etc/namespaces.json
 
 zookeeper:
     ensembleServers: localhost:2181
@@ -44,7 +52,7 @@ auth:
         key: secret
     basic:
         enabled: true
-        usersFile: ./config/users.auth
+        usersFile: /opt/trellis/etc/users.auth
 
 cors:
     allowOrigin:
