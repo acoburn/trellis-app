@@ -2,3 +2,4 @@
 build
 docs/*-SNAPSHOT
 src/dist/LICENSE
+config.yml
