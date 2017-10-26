@@ -15,17 +15,20 @@ The location of Kafka and Zookeeper will be defined in the `./etc/config.yml` fi
 
 ## Running Trellis
 
-Unpack a zip or tar distribution. In that directory, modify `./etc/config.yml` to match desired values for your system.
+Unpack a zip or tar distribution. In that directory, modify `./etc/config.yml` to match the
+desired values for your system.
 
-To run trellis directly from within a console, run this command: `./bin/trellis-app server ./etc/config.yml`.
-By default, logs are stored in `./log/trellis.log` and `./log/access.log`.
+To run trellis directly from within a console, issue this command:
+
+        $ ./bin/trellis-app server ./etc/config.yml
 
 **Note**: When running trellis, please be sure to also have an active
 [asynchronous processor](https://github.com/trellis-ldp/trellis-rosid-file-streaming).
 
 ## Installation
 
-To install Trellis as a systemd service on linux, follow these steps:
+To install Trellis as a [`systemd`](https://en.wikipedia.org/wiki/Systemd) service on linux,
+follow the steps below. `systemd` is used by linux distributions such as CentOS/RH 7+ and Ubuntu 15+.
 
 1. Move the unpacked Trellis directory to a location such as `/opt/trellis`.
    If you choose a different location, please update the `./etc/trellis.service` script.
