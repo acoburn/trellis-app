@@ -136,21 +136,21 @@ Trellis defines its own configuration options, including:
 | basic / usersFile | (none) | The path to a file where user credentials are stored |
 
         cors:
-			enabled: true
-			allowOrigin:
-				- "*"
-			allowMethods:
-				- "GET"
-				- "POST"
-				- "PATCH"
-			allowHeaders:
-				- "Content-Type"
-				- "Link"
-			exposeHeaders:
-				- "Link"
-				- "Location"
-			maxAge: 180
-			allowCredentials: true
+            enabled: true
+            allowOrigin:
+                - "*"
+            allowMethods:
+                - "GET"
+                - "POST"
+                - "PATCH"
+            allowHeaders:
+                - "Content-Type"
+                - "Link"
+            exposeHeaders:
+                - "Link"
+                - "Location"
+            maxAge: 180
+            allowCredentials: true
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
