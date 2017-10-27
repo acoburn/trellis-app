@@ -159,7 +159,7 @@ Trellis defines its own configuration options, including:
 | allowMethods | "PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST" | A list of allowed methods |
 | allowHeaders | "Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug", "Digest" | A list of allowed request headers |
 | exposeHeaders | "Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location", "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary" | A list of allowed response headers |
-| maxAge | 180 | The maximum age of pre-flight messages |
+| maxAge | 180 | The maximum age (in seconds) of pre-flight messages |
 | allowCredentials | true | Whether the actual request can be made with credentials |
 
         async: false
