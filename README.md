@@ -28,7 +28,7 @@ To run trellis directly from within a console, issue this command:
 ## Installation
 
 To install Trellis as a [`systemd`](https://en.wikipedia.org/wiki/Systemd) service on linux,
-follow the steps below. `systemd` is used by linux distributions such as CentOS/RH 7+ and Ubuntu 15+.
+follow the steps below. `systemd` is used by linux distributions such as CentOS/RHEL 7+ and Ubuntu 15+.
 
 1. Move the unpacked Trellis directory to a location such as `/opt/trellis`.
    If you choose a different location, please update the `./etc/trellis.service` script.
