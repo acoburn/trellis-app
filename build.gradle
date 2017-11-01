@@ -280,5 +280,6 @@ task docs(type: Javadoc) {
 
 checkstyleMain.dependsOn processBuildTools
 assembleDist.dependsOn copyDistTask
+afterReleaseBuild.dependsOn uploadArchives
 afterReleaseBuild.dependsOn docs
 
