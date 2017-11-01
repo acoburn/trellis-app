@@ -35,7 +35,7 @@ ext {
     trellisApiVersion = '0.3.0'
 
     trellisAgentVersion = '0.2.1'
-    trellisBinaryVersion = '0.2.1'
+    trellisBinaryVersion = '0.2.2'
     trellisConstraintVersion = '0.2.2'
     trellisKafkaVersion = '0.2.0'
     trellisHttpVersion = '0.3.2'
