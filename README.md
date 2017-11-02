@@ -21,7 +21,9 @@ desired values for your system.
 
 To run trellis directly from within a console, issue this command:
 
-        $ ./bin/trellis-app server ./etc/config.yml
+```bash
+$ ./bin/trellis-app server ./etc/config.yml
+```
 
 **Note**: When running trellis, please be sure to also have an active
 [asynchronous processor](https://github.com/trellis-ldp/trellis-rosid-file-streaming).
@@ -40,25 +42,35 @@ follow the steps below. `systemd` is used by linux distributions such as CentOS/
 
 4. Create a trellis user:
 
-        $ sudo useradd -r trellis -s /sbin/nologin
+```bash
+$ sudo useradd -r trellis -s /sbin/nologin
+```
 
 5. Create data directories. A different location can be used, but then please update
    the `./etc/config.yml` file.
 
-        $ sudo mkdir /var/lib/trellis
-        $ sudo chown trellis.trellis /var/lib/trellis
+```bash
+$ sudo mkdir /var/lib/trellis
+$ sudo chown trellis.trellis /var/lib/trellis
+```
 
 6. Install the systemd file:
 
-        $ sudo ln -s /opt/trellis/etc/trellis.service /etc/systemd/system/trellis.service
+```bash
+$ sudo ln -s /opt/trellis/etc/trellis.service /etc/systemd/system/trellis.service
+```
 
 7. Reload systemd to see the changes
 
-        $ sudo systemctl daemon-reload
+```bash
+$ sudo systemctl daemon-reload
+```
 
 8. Start the trellis service
 
-        $ sudo systemctl start trellis
+```bash
+$ sudo systemctl start trellis
+```
 
 To check that trellis is running, check the URL: `http://localhost:8080`
 
@@ -77,13 +89,15 @@ available. Any of the configuration options defined by Dropwizard can be part of
 
 Trellis defines its own configuration options, including:
 
-        partitions:
-            - id: partition-name
-              binaries:
-                path: /path/to/binaries
-              resources:
-                path: /path/to/resources
-              baseUrl: http://localhost:8080/
+```yaml
+partitions:
+    - id: partition-name
+      binaries:
+        path: /path/to/binaries
+      resources:
+        path: /path/to/resources
+      baseUrl: http://localhost:8080/
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
@@ -92,39 +106,47 @@ Trellis defines its own configuration options, including:
 | resources / path | (none) | The path for storing resources |
 | baseUrl | (none) | A defined baseUrl for resources in this partition. If not defined, the `Host` request header will be used |
 
-        namespaces:
-            file: /path/to/namespaces.json
+```yaml
+namespaces:
+    file: /path/to/namespaces.json
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
 | file | (none) | The path to a JSON file defining namespace prefixes |
 
-        zookeeper:
-            ensembleServers: localhost:2181
+```yaml
+zookeeper:
+    ensembleServers: localhost:2181
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
 | ensembleServers | (none) | The location of the zookeeper ensemble servers (comma separated) |
 
-        kafka:
-            bootstrapServers: localhost:9092
+```yaml
+kafka:
+    bootstrapServers: localhost:9092
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
 | bootstrapServers | (none) | The location of the kafka servers (comma separated) |
 
-        auth:
-            webac:
-                enabled: true
-            anon:
-                enabled: true
-            jwt:
-                enabled: true
-                base64Encoded: false
-                key: secret
-            basic:
-                enabled: true
-                usersFile: /path/to/users.auth
+```yaml
+auth:
+    webac:
+        enabled: true
+    anon:
+        enabled: true
+    jwt:
+        enabled: true
+        base64Encoded: false
+        key: secret
+    basic:
+        enabled: true
+        usersFile: /path/to/users.auth
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
@@ -136,22 +158,24 @@ Trellis defines its own configuration options, including:
 | basic / enabled | true | Whether basic authentication is enabled |
 | basic / usersFile | (none) | The path to a file where user credentials are stored |
 
-        cors:
-            enabled: true
-            allowOrigin:
-                - "*"
-            allowMethods:
-                - "GET"
-                - "POST"
-                - "PATCH"
-            allowHeaders:
-                - "Content-Type"
-                - "Link"
-            exposeHeaders:
-                - "Link"
-                - "Location"
-            maxAge: 180
-            allowCredentials: true
+```yaml
+cors:
+    enabled: true
+    allowOrigin:
+        - "*"
+    allowMethods:
+        - "GET"
+        - "POST"
+        - "PATCH"
+    allowHeaders:
+        - "Content-Type"
+        - "Link"
+    exposeHeaders:
+        - "Link"
+        - "Location"
+    maxAge: 180
+    allowCredentials: true
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
@@ -163,13 +187,17 @@ Trellis defines its own configuration options, including:
 | maxAge | 180 | The maximum age (in seconds) of pre-flight messages |
 | allowCredentials | true | Whether the actual request can be made with credentials |
 
-        async: false
+```yaml
+async: false
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
 | async | false | Set this to `true` if resource caches should be generated by an async processor; otherwise they will be generated synchronously. **Note**: setting this to `true` will make write operations faster for clients, but the availability of the updated content will appear to lag (because it is generated asynchronously). |
 
-        cacheMaxAge: 86400
+```yaml
+cacheMaxAge: 86400
+```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
