@@ -36,7 +36,6 @@ public class KafkaConfiguration {
     @NotEmpty
     private String bootstrapServers;
 
-    // TODO - JDK 9
     private final Map<String, String> other = new HashMap<>();
 
     /**

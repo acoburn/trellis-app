@@ -93,7 +93,6 @@ class TrellisUtils {
     }
 
     public static Map<String, String> getAssetConfiguration(final TrellisConfiguration config) {
-        // TODO -- JDK9 initializer
         final Map<String, String> assetMap = new HashMap<>();
         assetMap.put("icon", config.getAssets().getIcon());
         assetMap.put("css", config.getAssets().getCss().stream().map(String::trim).collect(joining(",")));
