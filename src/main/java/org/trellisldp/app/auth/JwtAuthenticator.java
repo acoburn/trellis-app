@@ -14,6 +14,7 @@
 package org.trellisldp.app.auth;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Base64.getEncoder;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -21,7 +22,6 @@ import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.security.Principal;
-import java.util.Base64;
 import java.util.Optional;
 
 import io.dropwizard.auth.AuthenticationException;
@@ -51,7 +51,7 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
      * @param encoded whether the key is encoded as base64
      */
     public JwtAuthenticator(final String key, final Boolean encoded) {
-        this.key = encoded ? key : Base64.getEncoder().encodeToString(key.getBytes(UTF_8));
+        this.key = encoded ? key : getEncoder().encodeToString(key.getBytes(UTF_8));
     }
 
     @Override
