@@ -59,7 +59,7 @@ class TrellisUtils {
     public static Map<String, Properties> getPartitionConfigurations(final TrellisConfiguration config) {
         return config.getPartitions().stream().collect(toMap(PartitionConfiguration::getId, p -> {
                 final Properties props = new Properties();
-                props.setProperty(PREFIX, "file:" + p.getId());
+                props.setProperty(PREFIX, FILE_PREFIX + p.getId());
                 props.setProperty(BASE_URL, p.getBaseUrl());
                 props.setProperty(RESOURCE_PATH, p.getResources().getPath());
                 props.setProperty(BINARY_PATH, p.getBinaries().getPath());
